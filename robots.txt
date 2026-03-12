@@ -4,3 +4,4 @@ Disallow: /admin/
 Disallow: /content/
 
 Sitemap: https://www.balancehospitality.nl/sitemap.xml
+
