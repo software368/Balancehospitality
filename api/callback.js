@@ -1,5 +1,4 @@
-// Vercel serverless function — GitHub OAuth callback for Decap CMS
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     const { code } = req.query;
 
     if (!code) {
@@ -26,17 +25,12 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: data.error_description });
         }
 
-        // Send the token back to Decap CMS via postMessage
-        const html = `
-<!DOCTYPE html>
-<html>
-<body>
-<script>
+        const tokenData = JSON.stringify({ token: data.access_token, provider: 'github' });
+        const html = `<!DOCTYPE html><html><body><script>
 (function() {
     function receiveMessage(e) {
-        console.log("receiveMessage %o", e);
         window.opener.postMessage(
-            'authorization:github:success:${JSON.stringify({ token: data.access_token, provider: 'github' })}',
+            'authorization:github:success:${tokenData}',
             e.origin
         );
         window.removeEventListener("message", receiveMessage, false);
@@ -44,13 +38,11 @@ export default async function handler(req, res) {
     window.addEventListener("message", receiveMessage, false);
     window.opener.postMessage("authorizing:github", "*");
 })();
-</script>
-</body>
-</html>`;
+</script></body></html>`;
 
         res.setHeader('Content-Type', 'text/html');
         res.send(html);
     } catch (error) {
         res.status(500).json({ error: 'Authentication failed' });
     }
-}
+};

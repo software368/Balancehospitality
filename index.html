@@ -1852,30 +1852,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 (function() {
     if (!new URLSearchParams(window.location.search).has('edit')) return;
 
-    let ghToken = sessionStorage.getItem('bh-edit-token');
+    let session = sessionStorage.getItem('bh-edit-session');
     let pendingChanges = {};
-    let editActive = false;
-
-    // --- Auth: prompt for GitHub login ---
-    function doAuth() {
-        const clientId = 'Ov23li1kgAaHAGEvqXnz';
-        const redirect = encodeURIComponent(window.location.origin + '/api/callback');
-        const state = btoa(window.location.href);
-        const popup = window.open(
-            `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirect}&scope=repo&state=${state}`,
-            'gh-auth', 'width=600,height=700'
-        );
-        window.addEventListener('message', function onMsg(e) {
-            if (typeof e.data === 'string' && e.data.startsWith('authorization:github:success:')) {
-                const payload = JSON.parse(e.data.replace('authorization:github:success:', ''));
-                ghToken = payload.token;
-                sessionStorage.setItem('bh-edit-token', ghToken);
-                window.removeEventListener('message', onMsg);
-                popup && popup.close();
-                activateEditor();
-            }
-        });
-    }
 
     // --- Inject editor CSS ---
     function injectStyles() {
@@ -1884,7 +1862,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             .bh-editable { outline: 2px dashed transparent; cursor: text; transition: outline 0.3s, background 0.3s; border-radius: 3px; }
             .bh-editable:hover { outline: 2px dashed var(--gold-dim); background: rgba(198,163,85,0.06); }
             .bh-editable:focus { outline: 2px solid var(--gold); background: rgba(198,163,85,0.1); }
-            .bh-editable[contenteditable="true"]::after { content: ''; }
             .bh-toolbar { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a1a; border: 1px solid var(--gold-dim); border-radius: 12px; padding: 12px 20px; display: flex; gap: 12px; align-items: center; z-index: 100000; font-family: var(--body); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
             .bh-toolbar span { color: var(--white-dim); font-size: 0.75rem; letter-spacing: 0.5px; }
             .bh-toolbar .bh-count { color: var(--gold); font-weight: 600; }
@@ -1899,27 +1876,91 @@ document.addEventListener('DOMContentLoaded', async () => {
             .bh-toast { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #111; padding: 10px 24px; border-radius: 8px; font-size: 0.8rem; font-weight: 500; z-index: 100001; opacity: 0; transition: opacity 0.4s; font-family: var(--body); }
             .bh-toast.show { opacity: 1; }
             .bh-edit-badge { position: fixed; top: 12px; right: 12px; background: var(--gold); color: #111; padding: 4px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 600; z-index: 100000; letter-spacing: 1px; text-transform: uppercase; font-family: var(--body); }
+            .bh-login-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 99999; display: flex; align-items: center; justify-content: center; }
+            .bh-login-box { background: #1a1a1a; border: 1px solid var(--gold-dim); border-radius: 16px; padding: 48px; text-align: center; max-width: 380px; width: 90%; }
+            .bh-login-box h2 { font-family: var(--serif); color: var(--white); font-size: 1.5rem; margin-bottom: 4px; }
+            .bh-login-box p { color: var(--white-dim); font-size: 0.8rem; margin-bottom: 24px; }
+            .bh-login-box input { display: block; width: 100%; padding: 12px 16px; margin-bottom: 12px; background: #111; border: 1px solid var(--dark-border); border-radius: 8px; color: var(--white); font-size: 0.85rem; font-family: var(--body); outline: none; transition: border 0.3s; }
+            .bh-login-box input:focus { border-color: var(--gold-dim); }
+            .bh-login-box input::placeholder { color: var(--white-dim); }
+            .bh-login-btn { display: block; width: 100%; padding: 12px; background: var(--gold); color: #111; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: var(--body); transition: background 0.3s; }
+            .bh-login-btn:hover { background: var(--gold-bright); }
+            .bh-login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+            .bh-login-error { color: #e74c3c; font-size: 0.75rem; margin-top: 8px; min-height: 1.2em; }
         `;
         document.head.appendChild(s);
     }
 
+    // --- Login with email/password ---
+    function showLogin() {
+        injectStyles();
+        const overlay = document.createElement('div');
+        overlay.className = 'bh-login-overlay';
+        overlay.innerHTML = `
+            <div class="bh-login-box">
+                <h2>Visual Editor</h2>
+                <p>Log in to edit this site</p>
+                <input type="email" id="bhEmail" placeholder="Email" autocomplete="email">
+                <input type="password" id="bhPass" placeholder="Password" autocomplete="current-password">
+                <button class="bh-login-btn" id="bhLoginBtn">Log In</button>
+                <div class="bh-login-error" id="bhLoginErr"></div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const btn = document.getElementById('bhLoginBtn');
+        const errEl = document.getElementById('bhLoginErr');
+
+        async function doLogin() {
+            const email = document.getElementById('bhEmail').value.trim();
+            const pass = document.getElementById('bhPass').value;
+            if (!email || !pass) { errEl.textContent = 'Enter email and password'; return; }
+
+            btn.disabled = true;
+            btn.textContent = 'Logging in...';
+            errEl.textContent = '';
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password: pass })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    session = data.session;
+                    sessionStorage.setItem('bh-edit-session', session);
+                    overlay.remove();
+                    activateEditor();
+                } else {
+                    errEl.textContent = data.error || 'Invalid credentials';
+                    btn.disabled = false;
+                    btn.textContent = 'Log In';
+                }
+            } catch (e) {
+                errEl.textContent = 'Connection error — try again';
+                btn.disabled = false;
+                btn.textContent = 'Log In';
+            }
+        }
+
+        btn.addEventListener('click', doLogin);
+        document.getElementById('bhPass').addEventListener('keydown', (e) => { if (e.key === 'Enter') doLogin(); });
+    }
+
     // --- Make elements editable ---
     function activateEditor() {
-        editActive = true;
         injectStyles();
 
-        // Badge
         const badge = document.createElement('div');
         badge.className = 'bh-edit-badge';
         badge.textContent = 'EDIT MODE';
         document.body.appendChild(badge);
 
-        // Toast element
         const toast = document.createElement('div');
         toast.className = 'bh-toast';
         document.body.appendChild(toast);
 
-        // Make all data-i18n elements editable
         const editables = document.querySelectorAll('[data-i18n]');
         editables.forEach(el => {
             el.classList.add('bh-editable');
@@ -1937,14 +1978,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             el.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    el.blur();
-                }
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); el.blur(); }
             });
         });
 
-        // Toolbar
         const toolbar = document.createElement('div');
         toolbar.className = 'bh-toolbar';
         toolbar.innerHTML = `
@@ -1956,15 +1993,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.appendChild(toolbar);
 
         const saveBtn = toolbar.querySelector('.bh-btn-save');
-        const cancelBtn = toolbar.querySelector('.bh-btn-cancel');
-        const logoutBtn = toolbar.querySelector('.bh-btn-logout');
-
-        saveBtn.addEventListener('click', saveChanges);
-        cancelBtn.addEventListener('click', resetChanges);
-        logoutBtn.addEventListener('click', () => {
-            sessionStorage.removeItem('bh-edit-token');
+        toolbar.querySelector('.bh-btn-cancel').addEventListener('click', resetChanges);
+        toolbar.querySelector('.bh-btn-logout').addEventListener('click', () => {
+            sessionStorage.removeItem('bh-edit-session');
             window.location.href = window.location.pathname;
         });
+        saveBtn.addEventListener('click', saveChanges);
 
         function updateToolbar() {
             const count = Object.keys(pendingChanges).length;
@@ -1973,9 +2007,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         function resetChanges() {
-            document.querySelectorAll('.bh-editable').forEach(el => {
-                el.innerHTML = el.dataset.original;
-            });
+            document.querySelectorAll('.bh-editable').forEach(el => { el.innerHTML = el.dataset.original; });
             pendingChanges = {};
             updateToolbar();
         }
@@ -1993,73 +2025,62 @@ document.addEventListener('DOMContentLoaded', async () => {
             toolbar.classList.add('bh-saving');
 
             try {
-                // Read current index.html from GitHub
-                const getRes = await fetch(`https://api.github.com/repos/software368/Balancehospitality/contents/index.html?ref=master`, {
-                    headers: { 'Authorization': `Bearer ${ghToken}`, 'Accept': 'application/vnd.github.v3+json' }
+                // Read current index.html via GitHub API (using server-side PAT)
+                const getRes = await fetch('/api/read', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session, file: 'index.html' })
                 });
                 const fileData = await getRes.json();
-                let html = atob(fileData.content.replace(/\n/g, ''));
+                if (!fileData.success) throw new Error(fileData.error || 'Failed to read file');
+                let html = fileData.content;
 
-                // Apply each change to the translations object in the HTML
+                // Apply changes to translations in the HTML
                 for (const [key, val] of Object.entries(pendingChanges)) {
-                    // Update the current language translation
                     const lang = currentLang;
-                    // Match pattern:  key: "value" or key: 'value'
                     const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const re = new RegExp(`(${escaped}:\\s*)(["'\`])(.*?)(\\2)`, 'g');
 
-                    // Find the right translation block and update
-                    const blockStart = html.indexOf(`translations = {`);
+                    const blockStart = html.indexOf('translations = {');
                     if (blockStart === -1) continue;
 
-                    // Find the language block
                     const langBlock = lang === 'nl' ? 'nl:' : 'en:';
                     const langStart = html.indexOf(langBlock, blockStart);
                     if (langStart === -1) continue;
 
-                    // Find next lang block or closing brace to limit scope
                     const nextLang = lang === 'nl' ? html.indexOf('en:', langStart + 10) : html.indexOf('};', langStart);
                     const scope = html.substring(langStart, nextLang);
 
-                    // Replace in scope
-                    const keyPattern = new RegExp(`(${escaped}:\\s*)(["'\`])([\\s\\S]*?)(\\2)`);
+                    const keyPattern = new RegExp('(' + escaped + ':\\s*)(["\'`])([\\s\\S]*?)(\\2)');
                     const match = scope.match(keyPattern);
                     if (match) {
                         const quote = match[2];
                         const cleanVal = val.replace(/\n/g, ' ').replace(/"/g, '&quot;');
-                        const newScope = scope.replace(keyPattern, `$1${quote}${cleanVal}${quote}`);
+                        const newScope = scope.replace(keyPattern, '$1' + quote + cleanVal + quote);
                         html = html.substring(0, langStart) + newScope + html.substring(nextLang);
                     }
 
-                    // Also update the HTML default text (data-i18n elements)
-                    const elRe = new RegExp(`(data-i18n="${escaped}"[^>]*>)([\\s\\S]*?)(</)`, 'g');
-                    html = html.replace(elRe, `$1${val}$3`);
+                    const elRe = new RegExp('(data-i18n="' + escaped + '"[^>]*>)([\\s\\S]*?)(<\/)', 'g');
+                    html = html.replace(elRe, '$1' + val + '$3');
                 }
 
-                // Save back to GitHub
+                // Save via server
                 const saveRes = await fetch('/api/save', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        token: ghToken,
+                        session,
                         file: 'index.html',
                         content: html,
-                        message: `Visual edit: updated ${Object.keys(pendingChanges).join(', ')}`
+                        message: 'Visual edit: updated ' + Object.keys(pendingChanges).join(', ')
                     })
                 });
 
                 const result = await saveRes.json();
                 if (result.success) {
                     showToast('Published! Changes are live in ~30 seconds.');
-                    // Update originals
-                    document.querySelectorAll('.bh-editable').forEach(el => {
-                        el.dataset.original = el.innerHTML;
-                    });
-                    // Also update the translations in memory
+                    document.querySelectorAll('.bh-editable').forEach(el => { el.dataset.original = el.innerHTML; });
                     for (const [key, val] of Object.entries(pendingChanges)) {
-                        if (translations[currentLang][key] !== undefined) {
-                            translations[currentLang][key] = val;
-                        }
+                        if (translations[currentLang][key] !== undefined) translations[currentLang][key] = val;
                     }
                     pendingChanges = {};
                 } else {
@@ -2078,37 +2099,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- Init ---
-    if (ghToken) {
-        // Wait for DOM + content load
-        if (document.readyState === 'complete') {
-            setTimeout(activateEditor, 500);
-        } else {
-            window.addEventListener('load', () => setTimeout(activateEditor, 500));
-        }
+    if (session) {
+        if (document.readyState === 'complete') setTimeout(activateEditor, 500);
+        else window.addEventListener('load', () => setTimeout(activateEditor, 500));
     } else {
-        // Show login prompt
-        window.addEventListener('DOMContentLoaded', () => {
-            injectStyles();
-            const overlay = document.createElement('div');
-            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;display:flex;align-items:center;justify-content:center;';
-            overlay.innerHTML = `
-                <div style="background:#1a1a1a;border:1px solid var(--gold-dim);border-radius:16px;padding:48px;text-align:center;max-width:400px;">
-                    <h2 style="font-family:var(--serif);color:var(--white);font-size:1.5rem;margin-bottom:8px;">Visual Editor</h2>
-                    <p style="color:var(--white-dim);font-size:0.85rem;margin-bottom:28px;">Log in with GitHub to edit this site</p>
-                    <button onclick="this.closest('div').querySelector('.bh-auth-fn').click()" style="background:var(--gold);color:#111;border:none;padding:12px 32px;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:var(--body);">Login with GitHub</button>
-                    <button class="bh-auth-fn" style="display:none;"></button>
-                </div>
-            `;
-            document.body.appendChild(overlay);
-            overlay.querySelector('.bh-auth-fn').addEventListener('click', () => {
-                overlay.remove();
-                doAuth();
-            });
-            overlay.querySelector('button').addEventListener('click', () => {
-                overlay.remove();
-                doAuth();
-            });
-        });
+        if (document.readyState === 'loading') window.addEventListener('DOMContentLoaded', showLogin);
+        else showLogin();
     }
 })();
 </script>

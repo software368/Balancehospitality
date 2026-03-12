@@ -1,0 +1,14 @@
+{
+  "functions": {
+    "api/*.js": {
+      "runtime": "nodejs20.x"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/auth", "destination": "/api/auth.js" },
+    { "source": "/api/callback", "destination": "/api/callback.js" },
+    { "source": "/api/save", "destination": "/api/save.js" },
+    { "source": "/api/login", "destination": "/api/login.js" },
+    { "source": "/api/read", "destination": "/api/read.js" }
+  ]
+}

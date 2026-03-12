@@ -1,15 +1,20 @@
-// Vercel serverless function — saves inline edits to GitHub
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { token, file, content, message } = req.body;
+    const { session, file, content, message } = req.body;
 
-    if (!token || !file || content === undefined) {
-        return res.status(400).json({ error: 'Missing required fields: token, file, content' });
+    // Validate session
+    if (session !== process.env.EDIT_SESSION_SECRET) {
+        return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    if (!file || content === undefined) {
+        return res.status(400).json({ error: 'Missing required fields: file, content' });
+    }
+
+    const token = process.env.GITHUB_PAT;
     const repo = 'software368/Balancehospitality';
     const branch = 'master';
 
@@ -30,10 +35,8 @@ export default async function handler(req, res) {
         const existing = getRes.status === 404 ? null : await getRes.json();
         const sha = existing ? existing.sha : undefined;
 
-        // Base64 encode the content
         const encoded = Buffer.from(content, 'utf-8').toString('base64');
 
-        // Create or update file
         const putBody = {
             message: message || 'Update content via visual editor',
             content: encoded,
@@ -61,4 +64,4 @@ export default async function handler(req, res) {
     } catch (error) {
         return res.status(500).json({ error: 'Failed to save: ' + error.message });
     }
-}
+};
