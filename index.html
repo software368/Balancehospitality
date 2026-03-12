@@ -1891,7 +1891,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.head.appendChild(s);
     }
 
-    // --- Login with email/password ---
+    // --- Login (client-side check) ---
     function showLogin() {
         injectStyles();
         const overlay = document.createElement('div');
@@ -1900,7 +1900,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="bh-login-box">
                 <h2>Visual Editor</h2>
                 <p>Log in to edit this site</p>
-                <input type="email" id="bhEmail" placeholder="Email" autocomplete="email">
                 <input type="password" id="bhPass" placeholder="Password" autocomplete="current-password">
                 <button class="bh-login-btn" id="bhLoginBtn">Log In</button>
                 <div class="bh-login-error" id="bhLoginErr"></div>
@@ -1911,36 +1910,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         const btn = document.getElementById('bhLoginBtn');
         const errEl = document.getElementById('bhLoginErr');
 
-        async function doLogin() {
-            const email = document.getElementById('bhEmail').value.trim();
+        function doLogin() {
             const pass = document.getElementById('bhPass').value;
-            if (!email || !pass) { errEl.textContent = 'Enter email and password'; return; }
-
-            btn.disabled = true;
-            btn.textContent = 'Logging in...';
-            errEl.textContent = '';
-
-            try {
-                const res = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password: pass })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    session = data.session;
-                    sessionStorage.setItem('bh-edit-session', session);
-                    overlay.remove();
-                    activateEditor();
-                } else {
-                    errEl.textContent = data.error || 'Invalid credentials';
-                    btn.disabled = false;
-                    btn.textContent = 'Log In';
-                }
-            } catch (e) {
-                errEl.textContent = 'Connection error — try again';
-                btn.disabled = false;
-                btn.textContent = 'Log In';
+            if (!pass) { errEl.textContent = 'Enter password'; return; }
+            if (pass === 'HMAwebedit01!*') {
+                session = 'bhg-session-2026-x9k4m';
+                sessionStorage.setItem('bh-edit-session', session);
+                overlay.remove();
+                activateEditor();
+            } else {
+                errEl.textContent = 'Invalid password';
             }
         }
 
