@@ -3,7 +3,9 @@ module.exports = async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { session, file, content, message } = req.body;
+    let body = req.body;
+    if (typeof body === 'string') body = JSON.parse(body);
+    const { session, file, content, message } = body;
 
     // Validate session
     if (session !== process.env.EDIT_SESSION_SECRET) {

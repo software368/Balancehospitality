@@ -4,7 +4,15 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        const body = req.body || {};
+        // Parse body — Vercel may or may not auto-parse
+        let body = req.body;
+        if (typeof body === 'string') {
+            body = JSON.parse(body);
+        }
+        if (!body || typeof body !== 'object') {
+            return res.status(400).json({ error: 'Invalid request body' });
+        }
+
         const email = (body.email || '').toLowerCase().trim();
         const password = body.password || '';
 
@@ -20,25 +28,11 @@ module.exports = async function handler(req, res) {
             return res.status(400).json({ error: 'Email and password required' });
         }
 
-        // Debug: show what we're comparing (remove after testing)
-        const emailMatch = email === validEmail;
-        const passMatch = password === validPassword;
-
-        if (emailMatch && passMatch) {
+        if (email === validEmail && password === validPassword) {
             return res.status(200).json({ success: true, session: sessionSecret });
         }
 
-        return res.status(401).json({
-            error: 'Invalid email or password',
-            debug: {
-                emailMatch,
-                passMatch,
-                emailSent: email,
-                emailExpected: validEmail,
-                passLength: password.length,
-                expectedPassLength: validPassword.length
-            }
-        });
+        return res.status(401).json({ error: 'Invalid email or password' });
     } catch (e) {
         return res.status(500).json({ error: 'Server error: ' + e.message });
     }
