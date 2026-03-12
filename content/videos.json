@@ -1,0 +1,10 @@
+{
+  "items": [
+    { "label": "Miss Maui", "type": "vimeo", "url": "https://player.vimeo.com/video/1172884553?badge=0&autopause=0&autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0" },
+    { "label": "Oceans Beach House", "type": "vimeo", "url": "https://player.vimeo.com/video/1172884646?badge=0&autopause=0&autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0" },
+    { "label": "Oyster Pearl", "type": "vimeo", "url": "https://player.vimeo.com/video/1172884826?badge=0&autopause=0&autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0" },
+    { "label": "Lady Lobster", "type": "vimeo", "url": "https://player.vimeo.com/video/1172884407?badge=0&autopause=0&autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0" },
+    { "label": "Volare", "type": "image", "url": "https://volarescheveningen.nl/wp-content/uploads/2026/01/Volare-44-1-scaled.jpg" },
+    { "label": "Big Bell", "type": "image", "url": "https://www.bigbell.nl/wp-content/uploads/2022/11/74297873_3993849513989884_5310503173980016567_o.jpg" }
+  ]
+}

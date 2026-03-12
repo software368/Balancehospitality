@@ -784,6 +784,56 @@
             background: linear-gradient(180deg, var(--black) 0%, rgba(198, 163, 85, 0.03) 40%, rgba(198, 163, 85, 0.03) 60%, var(--black) 100%);
             position: relative;
         }
+
+        /* Jobs title attention animation */
+        @keyframes jobsTitleIn {
+            0% { opacity: 0; transform: scale(0.7) translateY(30px); filter: blur(8px); }
+            60% { opacity: 1; transform: scale(1.05) translateY(-5px); filter: blur(0); }
+            80% { transform: scale(0.98) translateY(2px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        @keyframes glowPulse {
+            0%, 100% { text-shadow: 0 0 20px rgba(198, 163, 85, 0.15), 0 0 40px rgba(198, 163, 85, 0); }
+            50% { text-shadow: 0 0 30px rgba(198, 163, 85, 0.4), 0 0 60px rgba(198, 163, 85, 0.15); }
+        }
+        .jobs-title-animated {
+            font-family: var(--display);
+            font-size: clamp(2.4rem, 5vw, 4rem);
+            font-weight: 400;
+            color: var(--white);
+            text-align: center;
+            opacity: 0;
+            transition: none;
+            will-change: transform, opacity, filter;
+        }
+        .jobs-title-animated.visible {
+            animation: jobsTitleIn 1s var(--ease) forwards, glowPulse 3s ease-in-out 1.5s infinite;
+        }
+        .jobs-title-animated em {
+            font-style: italic;
+            background: linear-gradient(
+                90deg,
+                var(--gold) 0%,
+                var(--gold-light) 25%,
+                #fff 50%,
+                var(--gold-light) 75%,
+                var(--gold) 100%
+            );
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .jobs-title-animated.visible em {
+            animation: shimmer 3s linear 1s infinite;
+        }
+        @media (max-width: 540px) {
+            .jobs-title-animated { font-size: clamp(1.8rem, 7vw, 2.6rem); }
+        }
         .jobs-intro {
             text-align: center;
             max-width: 640px;
@@ -1258,7 +1308,7 @@
         <div class="container">
             <div class="section-header">
                 <p class="section-label reveal" data-i18n="jobs_label">Vacatures</p>
-                <h2 class="section-title reveal reveal-delay-1" data-i18n="jobs_title">Word Deel Van <em>Ons Team</em></h2>
+                <h2 class="jobs-title-animated reveal" data-i18n="jobs_title">Word Deel Van <em>Ons Team</em></h2>
                 <div class="ornament reveal reveal-delay-2">
                     <div class="ornament-line"></div>
                 </div>
@@ -1428,42 +1478,12 @@
     </footer>
 
 <script>
-// ============ DATA ============
-const restaurants = [
-    { name: "Miss Maui", url: "https://www.missmaui.nl", status: "active", cuisine: "Hawaiian Fusion",
-      img: "https://missmaui.nl/wp-content/uploads/2026/03/MissMaui-40-scaled.jpg",
-      desc: { nl: "Fine dining beachrestaurant met Hawa\u00efaanse invloeden. Dagverse vis, pok\u00e9 bowls & steaks.", en: "Fine dining beach restaurant with Hawaiian influences. Fresh fish, pok\u00e9 bowls & steaks." } },
-    { name: "Oceans Beach House", url: "https://www.oceansbeachhouse.nl", status: "active", cuisine: "Beachclub & Seafood",
-      img: "https://oceansbeachhouse.nl/wp-content/uploads/2026/03/OCEANS-Beach-House-Scheveningen-93-1-scaled.jpg",
-      desc: { nl: "Stijlvolle beachclub & restaurant. Fruits de mer, oesters, kreeft en topkwaliteit steaks.", en: "Stylish beachclub & restaurant. Fruits de mer, oysters, lobster and premium steaks." } },
-    { name: "Oyster Pearl", url: "https://www.oysterpearl.nl", status: "active", cuisine: "Oysters & Champagne",
-      img: "https://oysterpearl.nl/wp-content/uploads/2024/10/DSC08271-e1728817583775.jpg",
-      desc: { nl: "Elegante hotspot aan zee. Verse oesters, fingerfood, steaks & champagne met zeezicht.", en: "Elegant seaside hotspot. Fresh oysters, fingerfood, steaks & champagne with sea view." } },
-    { name: "Volare", url: "https://www.volarescheveningen.nl", status: "active", cuisine: "Italian Trattoria",
-      img: "https://volarescheveningen.nl/wp-content/uploads/2026/01/Volare-44-1-scaled.jpg",
-      desc: { nl: "Italiaanse trattoria met beachy vibe. Huisgemaakte pizza's uit de houtoven & cocktails.", en: "Italian trattoria with beachy vibes. Homemade wood-fired pizzas & cocktails." } },
-    { name: "Big Bell", url: "https://www.bigbell.nl", status: "active", cuisine: "Grand Caf\u00e9 & Steakhouse",
-      img: "https://www.bigbell.nl/wp-content/uploads/2022/11/74297873_3993849513989884_5310503173980016567_o.jpg",
-      desc: { nl: "Klassiek grand caf\u00e9 & steakhouse. Al jaren d\u00e9 ontmoetingsplek van Scheveningen.", en: "Classic grand caf\u00e9 & steakhouse. Scheveningen's iconic meeting place for years." } },
-    { name: "Lady Lobster", url: "https://www.ladylobster.nl", status: "coming-soon", cuisine: "Seafood",
-      img: null,
-      desc: { nl: "Exclusief seafood concept. Binnenkort geopend aan de kust.", en: "Exclusive seafood concept. Opening soon on the coast." } },
-    { name: "Brooklyn", url: "https://www.brooklynscheveningen.nl", status: "coming-soon", cuisine: "Burgers & Steaks",
-      img: "https://www.brooklynscheveningen.nl/html/filesystem/storeFolder/12/940-425/crop/T-Bone-web-voorpag.jpg",
-      desc: { nl: "Topkwaliteit burgers & steaks met zeezicht. Stoere, urban sfeer.", en: "Premium burgers & steaks with sea view. Bold, urban atmosphere." } },
-    { name: "Columbus", url: "https://www.columbusscheveningen.nl", status: "coming-soon", cuisine: "All-Day Dining",
-      img: "https://www.columbusscheveningen.nl/html/filesystem/storeFolder/9/940-425/crop/mooi-restaurant-uitzicht-zee.png",
-      desc: { nl: "Sfeervol dineren met zeezicht. Ontbijt, lunch & diner op de boulevard.", en: "Atmospheric dining with sea view. Breakfast, lunch & dinner on the boulevard." } }
-];
+// ============ DATA (loaded from content/ JSON files) ============
+let restaurants = [];
+let jobs = [];
+let siteSettings = {};
 
-const jobs = [
-    { icon: "&#x1F374;", cat: { nl: "Keuken", en: "Kitchen" }, title: { nl: "Chef / Sous-chef / Zelfstandig Werkend Kok / Keukenhulp", en: "Chef / Sous Chef / Independent Cook / Kitchen Assistant" }, sub: { nl: "Van keukenhulp tot chef-kok", en: "From kitchen assistant to head chef" }, detail: { nl: "Fulltime & parttime &middot; Interne opleiding &middot; Doorgroeimogelijkheden", en: "Full-time & part-time &middot; In-house training &middot; Growth opportunities" } },
-    { icon: "&#x1F4A7;", cat: { nl: "Keuken", en: "Kitchen" }, title: { nl: "Afwas", en: "Dishwasher" }, sub: { nl: "De spil van elke keuken", en: "The backbone of every kitchen" }, detail: { nl: "Fulltime & parttime &middot; Flexibele uren &middot; Geen ervaring nodig", en: "Full-time & part-time &middot; Flexible hours &middot; No experience needed" } },
-    { icon: "&#x1F378;", cat: { nl: "Front of House", en: "Front of House" }, title: { nl: "Bar", en: "Bar" }, sub: { nl: "Cocktails, bier & wijn", en: "Cocktails, beer & wine" }, detail: { nl: "Fulltime & parttime &middot; Avondwerk &middot; Geen ervaring nodig", en: "Full-time & part-time &middot; Evening shifts &middot; No experience needed" } },
-    { icon: "&#x1F44B;", cat: { nl: "Front of House", en: "Front of House" }, title: { nl: "Host", en: "Host" }, sub: { nl: "Het gezicht van het restaurant", en: "The face of the restaurant" }, detail: { nl: "Parttime & fulltime &middot; Flexibele roosters", en: "Part-time & full-time &middot; Flexible schedules" } },
-    { icon: "&#x2615;", cat: { nl: "Service", en: "Service" }, title: { nl: "Bediening", en: "Waitress / Waiter" }, sub: { nl: "Wijkloper & bediening", en: "Table service & runner" }, detail: { nl: "Fulltime, parttime, seizoen & oproep &middot; Geen ervaring nodig", en: "Full-time, part-time, seasonal & on-call &middot; No experience needed" } },
-    { icon: "&#x1F4CB;", cat: { nl: "Management", en: "Management" }, title: { nl: "(Assistent) Manager", en: "(Assistant) Manager" }, sub: { nl: "Leiderschap & operatie", en: "Leadership & operations" }, detail: { nl: "Fulltime &middot; Bedrijfsopleiding &middot; Doorgroeien", en: "Full-time &middot; Company training &middot; Career growth" } }
-];
+// (jobs loaded from content/jobs/*.json)
 
 // ============ i18n ============
 let currentLang = localStorage.getItem('bh-lang') || 'nl';
@@ -1723,8 +1743,44 @@ function observeStats() {
     nums.forEach(el => observer.observe(el));
 }
 
+// ============ CONTENT LOADER ============
+async function loadContent() {
+    try {
+        // Load settings
+        const settingsRes = await fetch('/content/settings.json');
+        siteSettings = await settingsRes.json();
+
+        // Load restaurants (fetch each JSON file via GitHub API listing or known filenames)
+        const restaurantFiles = ['miss-maui', 'oceans-beach-house', 'oyster-pearl', 'volare', 'big-bell', 'lady-lobster', 'brooklyn', 'columbus'];
+        const restaurantPromises = restaurantFiles.map(f => fetch(`/content/restaurants/${f}.json`).then(r => r.json()).catch(() => null));
+        const rawRestaurants = (await Promise.all(restaurantPromises)).filter(Boolean);
+        restaurants = rawRestaurants.sort((a, b) => (a.order || 0) - (b.order || 0)).map(r => ({
+            name: r.name,
+            url: r.url,
+            status: r.status,
+            cuisine: r.cuisine,
+            img: r.image || r.img || null,
+            desc: { nl: r.desc_nl, en: r.desc_en }
+        }));
+
+        // Load jobs
+        const jobFiles = ['keuken-kok', 'chef-kok', 'bar', 'host', 'bediening', 'assistent-manager'];
+        const jobPromises = jobFiles.map(f => fetch(`/content/jobs/${f}.json`).then(r => r.json()).catch(() => null));
+        const rawJobs = (await Promise.all(jobPromises)).filter(Boolean);
+        jobs = rawJobs.sort((a, b) => (a.order || 0) - (b.order || 0)).map(j => ({
+            cat: { nl: j.cat_nl, en: j.cat_en },
+            title: { nl: j.title_nl, en: j.title_en },
+            sub: { nl: j.sub_nl, en: j.sub_en },
+            detail: { nl: j.detail_nl, en: j.detail_en }
+        }));
+    } catch (e) {
+        console.warn('Could not load CMS content, using empty defaults:', e);
+    }
+}
+
 // ============ INIT ============
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadContent();
     buildMarquee();
     applyLang();
     observeReveals();

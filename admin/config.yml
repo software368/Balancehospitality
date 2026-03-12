@@ -1,0 +1,176 @@
+backend:
+  name: github
+  repo: software368/Balancehospitality
+  branch: master
+  base_url: https://balancehospitality.nl
+  auth_endpoint: /api/auth
+
+media_folder: "images"
+public_folder: "/images"
+
+collections:
+  # ============ SITE SETTINGS ============
+  - name: "settings"
+    label: "Site Settings"
+    files:
+      # ---- Hero ----
+      - name: "hero"
+        label: "Hero Section"
+        file: "content/settings.json"
+        fields:
+          - { name: "hero_video_url", label: "Hero Video (Vimeo URL)", widget: "string", default: "https://player.vimeo.com/video/1172891767?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0" }
+          - { name: "hero_eyebrow_nl", label: "Eyebrow (NL)", widget: "string", default: "Scheveningen Beach" }
+          - { name: "hero_eyebrow_en", label: "Eyebrow (EN)", widget: "string", default: "Scheveningen Beach" }
+          - { name: "hero_title_gold", label: "Title Gold Word", widget: "string", default: "Balance" }
+          - { name: "hero_title_white", label: "Title White Word", widget: "string", default: "Hospitality" }
+          - { name: "hero_subtitle_nl", label: "Subtitle (NL)", widget: "string", default: "Acht restaurants aan zee" }
+          - { name: "hero_subtitle_en", label: "Subtitle (EN)", widget: "string", default: "Eight restaurants by the sea" }
+          - { name: "hero_cta_nl", label: "CTA Button (NL)", widget: "string", default: "Bekijk Vacatures" }
+          - { name: "hero_cta_en", label: "CTA Button (EN)", widget: "string", default: "View Careers" }
+          - { name: "hero_cta2_nl", label: "Ghost CTA (NL)", widget: "string", default: "Ons Verhaal" }
+          - { name: "hero_cta2_en", label: "Ghost CTA (EN)", widget: "string", default: "Our Story" }
+          - name: "about_label_nl"
+            label: "About Label (NL)"
+            widget: "string"
+            default: "Ons Verhaal"
+          - name: "about_label_en"
+            label: "About Label (EN)"
+            widget: "string"
+            default: "Our Story"
+          - name: "about_heading_nl"
+            label: "About Heading (NL) — use <em> for gold italic"
+            widget: "string"
+            default: "Waar het strand onze <em>eetkamer</em> is"
+          - name: "about_heading_en"
+            label: "About Heading (EN)"
+            widget: "string"
+            default: "Where the beach is our <em>dining room</em>"
+          - name: "about_text1_nl"
+            label: "About Paragraph 1 (NL)"
+            widget: "text"
+            default: "Balance Hospitality Group is de drijvende kracht achter acht unieke horecaconcepten aan de kust van Scheveningen."
+          - name: "about_text1_en"
+            label: "About Paragraph 1 (EN)"
+            widget: "text"
+            default: "Balance Hospitality Group is the driving force behind eight unique hospitality concepts on the coast of Scheveningen."
+          - name: "about_text2_nl"
+            label: "About Paragraph 2 (NL)"
+            widget: "text"
+            default: "Onze kracht zit in onze mensen."
+          - name: "about_text2_en"
+            label: "About Paragraph 2 (EN)"
+            widget: "text"
+            default: "Our strength lies in our people."
+          - name: "about_quote_nl"
+            label: "About Quote (NL)"
+            widget: "string"
+            default: "Wij geloven dat de beste gastvrijheid ontstaat wanneer je team zich thuis voelt."
+          - name: "about_quote_en"
+            label: "About Quote (EN)"
+            widget: "string"
+            default: "We believe the best hospitality happens when your team feels at home."
+          - name: "about_video_url"
+            label: "About Video (Vimeo URL)"
+            widget: "string"
+            default: "https://player.vimeo.com/video/1172884553?badge=0&autopause=0&autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0"
+          - name: "jobs_label_nl"
+            label: "Jobs Label (NL)"
+            widget: "string"
+            default: "Vacatures"
+          - name: "jobs_label_en"
+            label: "Jobs Label (EN)"
+            widget: "string"
+            default: "Careers"
+          - name: "jobs_title_nl"
+            label: "Jobs Title (NL) — use <em> for gold italic"
+            widget: "string"
+            default: "Word Deel Van <em>Ons Team</em>"
+          - name: "jobs_title_en"
+            label: "Jobs Title (EN)"
+            widget: "string"
+            default: "Join <em>Our Team</em>"
+          - name: "jobs_intro_nl"
+            label: "Jobs Intro (NL)"
+            widget: "text"
+            default: "Wij zijn altijd op zoek naar enthousiaste mensen die het verschil willen maken."
+          - name: "jobs_intro_en"
+            label: "Jobs Intro (EN)"
+            widget: "text"
+            default: "We're always looking for enthusiastic people who want to make a difference."
+          - name: "jobs_apply_url"
+            label: "Apply Button URL"
+            widget: "string"
+            default: "https://marketingdm.typeform.com/BHG-jobs"
+          - name: "jobs_apply_nl"
+            label: "Apply Button (NL)"
+            widget: "string"
+            default: "Solliciteer Nu"
+          - name: "jobs_apply_en"
+            label: "Apply Button (EN)"
+            widget: "string"
+            default: "Apply Now"
+          - name: "footer_desc_nl"
+            label: "Footer Description (NL)"
+            widget: "text"
+            default: "Acht unieke restaurants aan de kust van Scheveningen, verenigd door een passie voor gastvrijheid en kwaliteit."
+          - name: "footer_desc_en"
+            label: "Footer Description (EN)"
+            widget: "text"
+            default: "Eight unique restaurants on the Scheveningen coast, united by a passion for hospitality and quality."
+          - name: "footer_instagram"
+            label: "Instagram URL"
+            widget: "string"
+            default: "https://www.instagram.com/balancehospitality/"
+
+      # ---- Video Reel ----
+      - name: "videos"
+        label: "Video Reel"
+        file: "content/videos.json"
+        fields:
+          - name: "items"
+            label: "Videos / Images"
+            widget: "list"
+            fields:
+              - { name: "label", label: "Label", widget: "string" }
+              - { name: "type", label: "Type", widget: "select", options: ["vimeo", "image"], default: "vimeo" }
+              - { name: "url", label: "Vimeo Embed URL or Image URL", widget: "string" }
+
+  # ============ RESTAURANTS ============
+  - name: "restaurants"
+    label: "Restaurants"
+    folder: "content/restaurants"
+    extension: "json"
+    format: "json"
+    create: true
+    slug: "{{slug}}"
+    sortable_fields: ["order", "name"]
+    fields:
+      - { name: "name", label: "Restaurant Name", widget: "string" }
+      - { name: "order", label: "Sort Order (1 = first)", widget: "number", default: 1 }
+      - { name: "url", label: "Website URL", widget: "string" }
+      - { name: "status", label: "Status", widget: "select", options: ["active", "coming-soon"], default: "active" }
+      - { name: "cuisine", label: "Cuisine Tag", widget: "string", hint: "e.g. Hawaiian Fusion, Italian Trattoria" }
+      - { name: "img", label: "Photo URL", widget: "string", required: false, hint: "Direct image URL or upload below" }
+      - { name: "image", label: "Photo Upload", widget: "image", required: false }
+      - { name: "desc_nl", label: "Description (NL)", widget: "text" }
+      - { name: "desc_en", label: "Description (EN)", widget: "text" }
+
+  # ============ JOBS ============
+  - name: "jobs"
+    label: "Jobs / Vacatures"
+    folder: "content/jobs"
+    extension: "json"
+    format: "json"
+    create: true
+    slug: "{{slug}}"
+    sortable_fields: ["order", "title_nl"]
+    fields:
+      - { name: "order", label: "Sort Order (1 = first)", widget: "number", default: 1 }
+      - { name: "cat_nl", label: "Category (NL)", widget: "string", hint: "e.g. Keuken, Front of House, Management" }
+      - { name: "cat_en", label: "Category (EN)", widget: "string" }
+      - { name: "title_nl", label: "Job Title (NL)", widget: "string" }
+      - { name: "title_en", label: "Job Title (EN)", widget: "string" }
+      - { name: "sub_nl", label: "Subtitle (NL)", widget: "string" }
+      - { name: "sub_en", label: "Subtitle (EN)", widget: "string" }
+      - { name: "detail_nl", label: "Details (NL)", widget: "string", hint: "e.g. Fulltime & parttime · Flexibele uren" }
+      - { name: "detail_en", label: "Details (EN)", widget: "string" }
