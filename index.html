@@ -200,6 +200,8 @@
         }
         .nav-links a:hover { color: var(--gold-light); }
         .nav-links a:hover::after { left: 0; right: 0; }
+        .nav-links a.active { color: var(--gold); }
+        .nav-links a.active::after { left: 0; right: 0; }
 
         .lang-toggle {
             background: none;
@@ -388,6 +390,11 @@
         .hero-scroll-line {
             width: 1px; height: 48px;
             background: linear-gradient(to bottom, var(--gold-dim), transparent);
+            animation: scrollPulse 3s ease-in-out infinite;
+        }
+        @keyframes scrollPulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
         }
 
         /* ============ MARQUEE ============ */
@@ -400,7 +407,7 @@
         }
         .marquee-track {
             display: flex;
-            animation: marquee 30s linear infinite;
+            animation: marquee 90s linear infinite;
             width: max-content;
         }
         .marquee-item {
@@ -630,6 +637,26 @@
             line-height: 1.7;
             color: var(--white-dim);
         }
+        .restaurant-card-cuisine {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            font-size: 0.5rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--white);
+            background: rgba(3, 3, 3, 0.6);
+            backdrop-filter: blur(8px);
+            padding: 4px 10px;
+            opacity: 0;
+            transform: translateY(4px);
+            transition: all 0.6s var(--ease);
+            z-index: 3;
+        }
+        .restaurant-card:hover .restaurant-card-cuisine {
+            opacity: 1;
+            transform: translateY(0);
+        }
         .restaurant-card-link {
             display: inline-flex;
             align-items: center;
@@ -690,9 +717,10 @@
             transition: border-color 0.4s;
         }
         .video-reel-item:hover { border-color: rgba(198, 163, 85, 0.25); }
-        .video-reel-item video {
+        .video-reel-item video, .video-reel-item iframe {
             width: 100%; height: 100%;
             object-fit: cover;
+            pointer-events: none;
         }
         .video-reel-placeholder {
             text-align: center;
@@ -865,12 +893,22 @@
             list-style: none;
         }
         .benefits-list li {
-            padding: 10px 0;
+            padding: 10px 0 10px 18px;
             border-bottom: 1px solid var(--dark-border);
             font-size: 0.88rem;
             color: var(--white-dim);
             line-height: 1.6;
             break-inside: avoid;
+            position: relative;
+        }
+        .benefits-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 6px;
+            height: 1px;
+            background: var(--gold-dim);
         }
         .benefits-list li strong {
             color: var(--white);
@@ -927,6 +965,18 @@
             gap: 48px;
             margin-bottom: 64px;
         }
+        .footer-grid > div {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s var(--ease-smooth), transform 0.8s var(--ease-smooth);
+        }
+        .footer-grid > div.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .footer-grid > div:nth-child(2) { transition-delay: 0.12s; }
+        .footer-grid > div:nth-child(3) { transition-delay: 0.24s; }
+        .footer-grid > div:nth-child(4) { transition-delay: 0.36s; }
         .footer-brand {
             font-family: var(--display);
             font-size: 1.8rem;
@@ -1255,19 +1305,19 @@
         <div class="container">
             <div class="video-reel-scroll" id="videoReelScroll">
                 <div class="video-reel-item">
-                    <video autoplay muted loop playsinline preload="metadata" src="short_mrsMaui_V1.mp4"></video>
+                    <iframe src="https://player.vimeo.com/video/1172884553?badge=0&autopause=0&background=1&loop=1&muted=1&autoplay=1" frameborder="0" allow="autoplay; fullscreen" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="Miss Maui"></iframe>
                     <div class="video-reel-label"><span>Miss Maui</span></div>
                 </div>
                 <div class="video-reel-item">
-                    <video autoplay muted loop playsinline preload="metadata" src="short_oceans_V1.mp4"></video>
+                    <iframe src="https://player.vimeo.com/video/1172884646?badge=0&autopause=0&background=1&loop=1&muted=1&autoplay=1" frameborder="0" allow="autoplay; fullscreen" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="Oceans Beach House"></iframe>
                     <div class="video-reel-label"><span>Oceans Beach House</span></div>
                 </div>
                 <div class="video-reel-item">
-                    <video autoplay muted loop playsinline preload="metadata" src="short_oysterpearl_V1.mp4"></video>
+                    <iframe src="https://player.vimeo.com/video/1172884826?badge=0&autopause=0&background=1&loop=1&muted=1&autoplay=1" frameborder="0" allow="autoplay; fullscreen" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="Oyster Pearl"></iframe>
                     <div class="video-reel-label"><span>Oyster Pearl</span></div>
                 </div>
                 <div class="video-reel-item">
-                    <video autoplay muted loop playsinline preload="metadata" src="short_ladylobsterV2.mp4"></video>
+                    <iframe src="https://player.vimeo.com/video/1172884407?badge=0&autopause=0&background=1&loop=1&muted=1&autoplay=1" frameborder="0" allow="autoplay; fullscreen" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="Lady Lobster"></iframe>
                     <div class="video-reel-label"><span>Lady Lobster</span></div>
                 </div>
                 <div class="video-reel-item">
@@ -1364,28 +1414,28 @@
 <script>
 // ============ DATA ============
 const restaurants = [
-    { name: "Miss Maui", url: "https://www.missmaui.nl", status: "active",
+    { name: "Miss Maui", url: "https://www.missmaui.nl", status: "active", cuisine: "Hawaiian Fusion",
       img: "https://missmaui.nl/wp-content/uploads/2026/03/MissMaui-40-scaled.jpg",
       desc: { nl: "Fine dining beachrestaurant met Hawa\u00efaanse invloeden. Dagverse vis, pok\u00e9 bowls & steaks.", en: "Fine dining beach restaurant with Hawaiian influences. Fresh fish, pok\u00e9 bowls & steaks." } },
-    { name: "Oceans Beach House", url: "https://www.oceansbeachhouse.nl", status: "active",
+    { name: "Oceans Beach House", url: "https://www.oceansbeachhouse.nl", status: "active", cuisine: "Beachclub & Seafood",
       img: "https://oceansbeachhouse.nl/wp-content/uploads/2026/03/OCEANS-Beach-House-Scheveningen-93-1-scaled.jpg",
       desc: { nl: "Stijlvolle beachclub & restaurant. Fruits de mer, oesters, kreeft en topkwaliteit steaks.", en: "Stylish beachclub & restaurant. Fruits de mer, oysters, lobster and premium steaks." } },
-    { name: "Oyster Pearl", url: "https://www.oysterpearl.nl", status: "active",
+    { name: "Oyster Pearl", url: "https://www.oysterpearl.nl", status: "active", cuisine: "Oysters & Champagne",
       img: "https://oysterpearl.nl/wp-content/uploads/2024/10/DSC08271-e1728817583775.jpg",
       desc: { nl: "Elegante hotspot aan zee. Verse oesters, fingerfood, steaks & champagne met zeezicht.", en: "Elegant seaside hotspot. Fresh oysters, fingerfood, steaks & champagne with sea view." } },
-    { name: "Volare", url: "https://www.volarescheveningen.nl", status: "active",
+    { name: "Volare", url: "https://www.volarescheveningen.nl", status: "active", cuisine: "Italian Trattoria",
       img: "https://volarescheveningen.nl/wp-content/uploads/2026/01/Volare-44-1-scaled.jpg",
       desc: { nl: "Italiaanse trattoria met beachy vibe. Huisgemaakte pizza's uit de houtoven & cocktails.", en: "Italian trattoria with beachy vibes. Homemade wood-fired pizzas & cocktails." } },
-    { name: "Big Bell", url: "https://www.bigbell.nl", status: "active",
+    { name: "Big Bell", url: "https://www.bigbell.nl", status: "active", cuisine: "Grand Caf\u00e9 & Steakhouse",
       img: "https://www.bigbell.nl/wp-content/uploads/2022/11/74297873_3993849513989884_5310503173980016567_o.jpg",
       desc: { nl: "Klassiek grand caf\u00e9 & steakhouse. Al jaren d\u00e9 ontmoetingsplek van Scheveningen.", en: "Classic grand caf\u00e9 & steakhouse. Scheveningen's iconic meeting place for years." } },
-    { name: "Lady Lobster", url: "https://www.ladylobster.nl", status: "coming-soon",
+    { name: "Lady Lobster", url: "https://www.ladylobster.nl", status: "coming-soon", cuisine: "Seafood",
       img: null,
       desc: { nl: "Exclusief seafood concept. Binnenkort geopend aan de kust.", en: "Exclusive seafood concept. Opening soon on the coast." } },
-    { name: "Brooklyn", url: "https://www.brooklynscheveningen.nl", status: "coming-soon",
+    { name: "Brooklyn", url: "https://www.brooklynscheveningen.nl", status: "coming-soon", cuisine: "Burgers & Steaks",
       img: "https://www.brooklynscheveningen.nl/html/filesystem/storeFolder/12/940-425/crop/T-Bone-web-voorpag.jpg",
       desc: { nl: "Topkwaliteit burgers & steaks met zeezicht. Stoere, urban sfeer.", en: "Premium burgers & steaks with sea view. Bold, urban atmosphere." } },
-    { name: "Columbus", url: "https://www.columbusscheveningen.nl", status: "coming-soon",
+    { name: "Columbus", url: "https://www.columbusscheveningen.nl", status: "coming-soon", cuisine: "All-Day Dining",
       img: "https://www.columbusscheveningen.nl/html/filesystem/storeFolder/9/940-425/crop/mooi-restaurant-uitzicht-zee.png",
       desc: { nl: "Sfeervol dineren met zeezicht. Ontbijt, lunch & diner op de boulevard.", en: "Atmospheric dining with sea view. Breakfast, lunch & dinner on the boulevard." } }
 ];
@@ -1513,6 +1563,7 @@ function renderRestaurants() {
             <div class="restaurant-card-media">
                 ${r.img ? `<img src="${r.img}" alt="${r.name}" loading="lazy">` : `<span class="restaurant-card-media-placeholder">${translations[currentLang].coming_soon_placeholder}</span>`}
                 <div class="restaurant-card-media-overlay"></div>
+                ${r.cuisine ? `<span class="restaurant-card-cuisine">${r.cuisine}</span>` : ''}
             </div>
             <div class="restaurant-card-body">
                 <h3 class="restaurant-card-name">${r.name}</h3>
@@ -1562,6 +1613,18 @@ function buildMarquee() {
 
 window.addEventListener('scroll', () => {
     document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+
+    // Nav active state
+    const sections = ['about', 'restaurants', 'videos', 'jobs'];
+    const scrollPos = window.scrollY + 160;
+    let current = '';
+    sections.forEach(id => {
+        const section = document.getElementById(id);
+        if (section && section.offsetTop <= scrollPos) current = id;
+    });
+    document.querySelectorAll('.nav-links a[href^="#"]').forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
 });
 
 // ============ DRAG SCROLL ============
@@ -1601,14 +1664,57 @@ document.querySelectorAll('.nav-links a').forEach(a => {
     });
 });
 
+// ============ FOOTER REVEAL ============
+function observeFooter() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.footer-grid > div').forEach(el => observer.observe(el));
+}
+
+// ============ STAT COUNTER ============
+function observeStats() {
+    const nums = document.querySelectorAll('.about-stat-num');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const el = entry.target;
+                const raw = el.textContent.trim();
+                const num = parseInt(raw);
+                if (!isNaN(num) && num > 0) {
+                    const suffix = raw.replace(String(num), '');
+                    let start = 0;
+                    const duration = 1800;
+                    const startTime = performance.now();
+                    function step(now) {
+                        const progress = Math.min((now - startTime) / duration, 1);
+                        const eased = 1 - Math.pow(1 - progress, 3);
+                        el.textContent = Math.round(eased * num) + suffix;
+                        if (progress < 1) requestAnimationFrame(step);
+                    }
+                    el.textContent = '0' + suffix;
+                    requestAnimationFrame(step);
+                }
+                observer.unobserve(el);
+            }
+        });
+    }, { threshold: 0.5 });
+    nums.forEach(el => observer.observe(el));
+}
+
 // ============ INIT ============
 document.addEventListener('DOMContentLoaded', () => {
     buildMarquee();
     applyLang();
     observeReveals();
     initDragScroll();
+    observeFooter();
+    observeStats();
 });
 </script>
 
+<script src="https://player.vimeo.com/api/player.js"></script>
 </body>
 </html>
