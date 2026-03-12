@@ -2,7 +2,7 @@ backend:
   name: github
   repo: software368/Balancehospitality
   branch: master
-  base_url: https://balancehospitality.nl
+  base_url: https://balancehospitality.vercel.app
   auth_endpoint: /api/auth
 
 media_folder: "images"
