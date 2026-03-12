@@ -274,11 +274,14 @@
         }
         .hero-video {
             position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+            top: 50%;
+            left: 50%;
+            width: 120%;
+            height: 120%;
+            transform: translate(-50%, -50%);
             opacity: 0.4;
+            pointer-events: none;
+            border: none;
         }
         .hero-video-overlay {
             position: absolute;
@@ -515,6 +518,7 @@
             background: var(--dark);
             border: 1px solid var(--dark-border);
             overflow: hidden;
+            position: relative;
             position: relative;
             display: flex;
             align-items: center;
@@ -1212,8 +1216,7 @@
     <main>
     <section class="hero" id="hero" aria-label="Hero">
         <div class="hero-bg"></div>
-        <!-- VIDEO: set display:block and add src -->
-        <video class="hero-video" autoplay muted loop playsinline preload="metadata" src="short_oceans_V1.mp4"></video>
+        <iframe class="hero-video" src="https://player.vimeo.com/video/1172884646?badge=0&autopause=0&autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0" frameborder="0" allow="autoplay; fullscreen" title="Hero video"></iframe>
         <div class="hero-video-overlay"></div>
         <div class="hero-content">
             <p class="hero-eyebrow reveal" data-i18n="hero_eyebrow">Scheveningen Beach</p>
@@ -1270,7 +1273,7 @@
                 </div>
                 <div class="about-visual reveal reveal-delay-2">
                     <div class="about-visual-frame">
-                        <video autoplay muted loop playsinline preload="metadata" src="short_mrsMaui_V1.mp4"></video>
+                        <iframe src="https://player.vimeo.com/video/1172884553?badge=0&autopause=0&autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0" frameborder="0" allow="autoplay; fullscreen" style="width:100%;height:100%;position:absolute;top:0;left:0;" title="About video"></iframe>
                     </div>
                 </div>
             </div>
