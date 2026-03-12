@@ -4,11 +4,8 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        // Parse body — Vercel may or may not auto-parse
         let body = req.body;
-        if (typeof body === 'string') {
-            body = JSON.parse(body);
-        }
+        if (typeof body === 'string') body = JSON.parse(body);
         if (!body || typeof body !== 'object') {
             return res.status(400).json({ error: 'Invalid request body' });
         }
@@ -16,13 +13,10 @@ module.exports = async function handler(req, res) {
         const email = (body.email || '').toLowerCase().trim();
         const password = body.password || '';
 
-        const validEmail = (process.env.EDIT_EMAIL || '').toLowerCase().trim();
-        const validPassword = process.env.EDIT_PASSWORD || '';
-        const sessionSecret = process.env.EDIT_SESSION_SECRET;
-
-        if (!validEmail || !validPassword || !sessionSecret) {
-            return res.status(500).json({ error: 'Server not configured — add EDIT_EMAIL, EDIT_PASSWORD, EDIT_SESSION_SECRET env vars in Vercel' });
-        }
+        // Hardcoded fallback (remove after confirming env vars work)
+        const validEmail = (process.env.EDIT_EMAIL || 'team@horecemarketingacademy.nl').toLowerCase().trim();
+        const validPassword = process.env.EDIT_PASSWORD || 'HMAwebedit01!*';
+        const sessionSecret = process.env.EDIT_SESSION_SECRET || 'bhg-session-2026-x9k4m';
 
         if (!email || !password) {
             return res.status(400).json({ error: 'Email and password required' });
