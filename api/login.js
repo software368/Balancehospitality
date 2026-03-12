@@ -4,10 +4,12 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        const { email, password } = req.body || {};
+        const body = req.body || {};
+        const email = (body.email || '').toLowerCase().trim();
+        const password = body.password || '';
 
-        const validEmail = process.env.EDIT_EMAIL;
-        const validPassword = process.env.EDIT_PASSWORD;
+        const validEmail = (process.env.EDIT_EMAIL || '').toLowerCase().trim();
+        const validPassword = process.env.EDIT_PASSWORD || '';
         const sessionSecret = process.env.EDIT_SESSION_SECRET;
 
         if (!validEmail || !validPassword || !sessionSecret) {
@@ -18,11 +20,25 @@ module.exports = async function handler(req, res) {
             return res.status(400).json({ error: 'Email and password required' });
         }
 
-        if (email.toLowerCase().trim() === validEmail.toLowerCase() && password === validPassword) {
+        // Debug: show what we're comparing (remove after testing)
+        const emailMatch = email === validEmail;
+        const passMatch = password === validPassword;
+
+        if (emailMatch && passMatch) {
             return res.status(200).json({ success: true, session: sessionSecret });
         }
 
-        return res.status(401).json({ error: 'Invalid email or password' });
+        return res.status(401).json({
+            error: 'Invalid email or password',
+            debug: {
+                emailMatch,
+                passMatch,
+                emailSent: email,
+                emailExpected: validEmail,
+                passLength: password.length,
+                expectedPassLength: validPassword.length
+            }
+        });
     } catch (e) {
         return res.status(500).json({ error: 'Server error: ' + e.message });
     }
