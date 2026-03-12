@@ -1850,7 +1850,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 <!-- ============ INLINE VISUAL EDITOR ============ -->
 <script>
 (function() {
-    if (!new URLSearchParams(window.location.search).has('edit')) return;
+    if (window.location.pathname !== '/administrator') return;
 
     let session = sessionStorage.getItem('bh-edit-session');
     let pendingChanges = {};
