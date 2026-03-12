@@ -570,10 +570,17 @@
         .section-title em { font-style: italic; color: var(--gold); }
 
         .restaurants-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 2px;
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 16px;
+            scrollbar-width: none;
+            cursor: grab;
         }
+        .restaurants-grid::-webkit-scrollbar { display: none; }
+        .restaurants-grid:active { cursor: grabbing; }
         .restaurant-card {
             background: var(--dark-card);
             transition: all 0.5s var(--ease);
@@ -581,7 +588,11 @@
             overflow: hidden;
             text-decoration: none;
             display: block;
-            group: true;
+            min-width: 300px;
+            max-width: 340px;
+            flex: 0 0 300px;
+            scroll-snap-align: start;
+            border-radius: 8px;
         }
         .restaurant-card::before {
             content: '';
@@ -597,7 +608,7 @@
         }
         .restaurant-card:hover {
             z-index: 3;
-            transform: scale(1.02);
+            transform: scale(1.03);
             box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 60px rgba(198, 163, 85, 0.06);
         }
         .restaurant-card-media {
@@ -689,8 +700,8 @@
             z-index: 4;
         }
 
-        @media (max-width: 1024px) { .restaurants-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 540px) { .restaurants-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 1024px) { .restaurant-card { min-width: 270px; flex: 0 0 270px; } }
+        @media (max-width: 540px) { .restaurant-card { min-width: 250px; flex: 0 0 250px; } }
 
         /* ============ VIDEO REEL ============ */
         .video-reel {
@@ -1242,6 +1253,41 @@
         <div class="marquee-track" id="marqueeTrack"></div>
     </div>
 
+    <!-- JOBS -->
+    <section class="jobs section" id="jobs">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-label reveal" data-i18n="jobs_label">Vacatures</p>
+                <h2 class="section-title reveal reveal-delay-1" data-i18n="jobs_title">Word Deel Van <em>Ons Team</em></h2>
+                <div class="ornament reveal reveal-delay-2">
+                    <div class="ornament-line"></div>
+                </div>
+            </div>
+            <div class="jobs-intro reveal">
+                <p data-i18n="jobs_intro">Kom werken bij de leukste horecagroep van Scheveningen!</p>
+            </div>
+
+            <div class="jobs-positions" id="jobsGrid"></div>
+
+            <div class="benefits-section reveal">
+                <h3 class="benefits-title" data-i18n="benefits_title">Waarom werken bij <em>Balance</em>?</h3>
+                <ul class="benefits-list" id="benefitsList">
+                    <li><strong data-i18n="benefit_1_title">Balance Academy</strong> &mdash; <span data-i18n="benefit_1_desc">geen ervaring nodig, wij trainen je</span></li>
+                    <li><strong data-i18n="benefit_2_title">Flexibele uren</strong> &mdash; <span data-i18n="benefit_2_desc">fulltime, parttime, seizoen of oproep</span></li>
+                    <li><strong data-i18n="benefit_3_title">Personeelskorting</strong> &mdash; <span data-i18n="benefit_3_desc">korting op maaltijden & pensioenregeling</span></li>
+                    <li><strong data-i18n="benefit_4_title">Doorgroeien</strong> &mdash; <span data-i18n="benefit_4_desc">van medewerker naar Head Waiter, Manager of verder</span></li>
+                    <li><strong data-i18n="benefit_5_title">Extra's</strong> &mdash; <span data-i18n="benefit_5_desc">kerstpakket, reiskosten- & taxivergoeding</span></li>
+                    <li><strong data-i18n="benefit_6_title">Teamevents</strong> &mdash; <span data-i18n="benefit_6_desc">borrels, feesten & toffe collega's aan zee</span></li>
+                </ul>
+            </div>
+
+            <div class="jobs-cta reveal">
+                <a href="https://marketingdm.typeform.com/BHG-jobs" target="_blank" rel="noopener" class="btn-apply" id="applyBtn" data-i18n="jobs_apply">Solliciteer in 1 minuut</a>
+                <span class="btn-apply-sub" data-i18n="jobs_apply_sub">Alle locaties &middot; Scheveningen</span>
+            </div>
+        </div>
+    </section>
+
     <!-- ABOUT -->
     <section class="about section" id="about">
         <div class="container">
@@ -1293,6 +1339,7 @@
                 </div>
             </div>
             <div class="restaurants-grid" id="restaurantsGrid"></div>
+            <p class="video-reel-hint reveal" data-i18n="restaurants_hint">&#8592; Sleep om te ontdekken &#8594;</p>
         </div>
     </section>
 
@@ -1338,41 +1385,6 @@
         </div>
     </section>
 
-    <!-- JOBS -->
-    <section class="jobs section" id="jobs">
-        <div class="container">
-            <div class="section-header">
-                <p class="section-label reveal" data-i18n="jobs_label">Vacatures</p>
-                <h2 class="section-title reveal reveal-delay-1" data-i18n="jobs_title">Word Deel Van <em>Ons Team</em></h2>
-                <div class="ornament reveal reveal-delay-2">
-                    <div class="ornament-line"></div>
-                </div>
-            </div>
-            <div class="jobs-intro reveal">
-                <p data-i18n="jobs_intro">Wij zijn altijd op zoek naar enthousiaste mensen die het verschil willen maken. Geen ervaring? Geen probleem &mdash; wij leiden je op. Solliciteer vandaag nog en werk op de mooiste locatie van Nederland.</p>
-            </div>
-
-            <div class="jobs-positions" id="jobsGrid"></div>
-
-            <div class="benefits-section reveal">
-                <h3 class="benefits-title" data-i18n="benefits_title">Waarom werken bij <em>Balance</em>?</h3>
-                <ul class="benefits-list" id="benefitsList">
-                    <li><strong data-i18n="benefit_1_title">Balance Academy</strong> &mdash; <span data-i18n="benefit_1_desc">geen ervaring nodig, wij trainen je</span></li>
-                    <li><strong data-i18n="benefit_2_title">Flexibele uren</strong> &mdash; <span data-i18n="benefit_2_desc">fulltime, parttime, seizoen of oproep</span></li>
-                    <li><strong data-i18n="benefit_3_title">Personeelskorting</strong> &mdash; <span data-i18n="benefit_3_desc">korting op maaltijden & pensioenregeling</span></li>
-                    <li><strong data-i18n="benefit_4_title">Doorgroeien</strong> &mdash; <span data-i18n="benefit_4_desc">van medewerker naar Head Waiter, Manager of verder</span></li>
-                    <li><strong data-i18n="benefit_5_title">Extra's</strong> &mdash; <span data-i18n="benefit_5_desc">kerstpakket, reiskosten- & taxivergoeding</span></li>
-                    <li><strong data-i18n="benefit_6_title">Teamevents</strong> &mdash; <span data-i18n="benefit_6_desc">borrels, feesten & toffe collega's aan zee</span></li>
-                </ul>
-            </div>
-
-            <div class="jobs-cta reveal">
-                <a href="https://marketingdm.typeform.com/BHG-jobs" target="_blank" rel="noopener" class="btn-apply" id="applyBtn" data-i18n="jobs_apply">Solliciteer Nu</a>
-                <span class="btn-apply-sub" data-i18n="jobs_apply_sub">Alle locaties &middot; Scheveningen</span>
-            </div>
-        </div>
-    </section>
-
     </main>
 
     <!-- FOOTER -->
@@ -1404,8 +1416,7 @@
                 <div>
                     <h4 class="footer-heading" data-i18n="footer_contact">Contact</h4>
                     <ul class="footer-links">
-                        <li><a href="#jobs" data-i18n="footer_jobs_link">Bekijk Vacatures</a></li>
-                        <li style="color: var(--white-dim); font-size: 0.82rem; margin-top: 8px;">Scheveningen<br>Den Haag, NL</li>
+                        <li style="color: var(--white-dim); font-size: 0.82rem;">Scheveningen<br>Den Haag, NL</li>
                     </ul>
                 </div>
             </div>
@@ -1446,12 +1457,12 @@ const restaurants = [
 ];
 
 const jobs = [
-    { icon: "&#x1F374;", cat: { nl: "Keuken", en: "Kitchen" }, title: { nl: "Keuken / Kok", en: "Kitchen / Chef" }, sub: { nl: "Afwas, voorbereidend & zelfstandig kok", en: "Dishwashing, prep & independent chef" }, detail: { nl: "Fulltime & parttime &middot; Flexibele uren &middot; Interne opleiding", en: "Full-time & part-time &middot; Flexible hours &middot; In-house training" } },
-    { icon: "&#x1F525;", cat: { nl: "Keuken", en: "Kitchen" }, title: { nl: "Chef-kok", en: "Head Chef" }, sub: { nl: "Leid de keuken & cre&euml;er gerechten", en: "Lead the kitchen & create dishes" }, detail: { nl: "Fulltime &middot; Pensioen &middot; Personeelskorting", en: "Full-time &middot; Pension &middot; Staff discount" } },
+    { icon: "&#x1F374;", cat: { nl: "Keuken", en: "Kitchen" }, title: { nl: "Chef / Sous-chef / Zelfstandig Werkend Kok / Keukenhulp", en: "Chef / Sous Chef / Independent Cook / Kitchen Assistant" }, sub: { nl: "Van keukenhulp tot chef-kok", en: "From kitchen assistant to head chef" }, detail: { nl: "Fulltime & parttime &middot; Interne opleiding &middot; Doorgroeimogelijkheden", en: "Full-time & part-time &middot; In-house training &middot; Growth opportunities" } },
+    { icon: "&#x1F4A7;", cat: { nl: "Keuken", en: "Kitchen" }, title: { nl: "Afwas", en: "Dishwasher" }, sub: { nl: "De spil van elke keuken", en: "The backbone of every kitchen" }, detail: { nl: "Fulltime & parttime &middot; Flexibele uren &middot; Geen ervaring nodig", en: "Full-time & part-time &middot; Flexible hours &middot; No experience needed" } },
     { icon: "&#x1F378;", cat: { nl: "Front of House", en: "Front of House" }, title: { nl: "Bar", en: "Bar" }, sub: { nl: "Cocktails, bier & wijn", en: "Cocktails, beer & wine" }, detail: { nl: "Fulltime & parttime &middot; Avondwerk &middot; Geen ervaring nodig", en: "Full-time & part-time &middot; Evening shifts &middot; No experience needed" } },
     { icon: "&#x1F44B;", cat: { nl: "Front of House", en: "Front of House" }, title: { nl: "Host", en: "Host" }, sub: { nl: "Het gezicht van het restaurant", en: "The face of the restaurant" }, detail: { nl: "Parttime & fulltime &middot; Flexibele roosters", en: "Part-time & full-time &middot; Flexible schedules" } },
     { icon: "&#x2615;", cat: { nl: "Service", en: "Service" }, title: { nl: "Bediening", en: "Waitress / Waiter" }, sub: { nl: "Wijkloper & bediening", en: "Table service & runner" }, detail: { nl: "Fulltime, parttime, seizoen & oproep &middot; Geen ervaring nodig", en: "Full-time, part-time, seasonal & on-call &middot; No experience needed" } },
-    { icon: "&#x1F4CB;", cat: { nl: "Management", en: "Management" }, title: { nl: "Assistent Manager", en: "Assistant Manager" }, sub: { nl: "Leiderschap & operatie", en: "Leadership & operations" }, detail: { nl: "Fulltime &middot; Bedrijfsopleiding &middot; Doorgroeien naar Manager", en: "Full-time &middot; Company training &middot; Grow into Manager" } }
+    { icon: "&#x1F4CB;", cat: { nl: "Management", en: "Management" }, title: { nl: "(Assistent) Manager", en: "(Assistant) Manager" }, sub: { nl: "Leiderschap & operatie", en: "Leadership & operations" }, detail: { nl: "Fulltime &middot; Bedrijfsopleiding &middot; Doorgroeien", en: "Full-time &middot; Company training &middot; Career growth" } }
 ];
 
 // ============ i18n ============
@@ -1475,9 +1486,10 @@ const translations = {
         restaurants_label: "Onze Merken", restaurants_title: '8 Concepten, <em>1 Familie</em>',
         videos_label: "Behind the Scenes", videos_title: '<em>Sfeer</em>impressie',
         video_hint: "&#8592; Sleep om te ontdekken &#8594;",
+        restaurants_hint: "&#8592; Sleep om te ontdekken &#8594;",
         jobs_label: "Vacatures", jobs_title: 'Word Deel Van <em>Ons Team</em>',
-        jobs_intro: "Wij zijn altijd op zoek naar enthousiaste mensen die het verschil willen maken. Geen ervaring? Geen probleem &mdash; wij leiden je op. Solliciteer vandaag nog en werk op de mooiste locatie van Nederland.",
-        jobs_apply: "Solliciteer Nu", jobs_apply_sub: "Alle locaties &middot; Scheveningen",
+        jobs_intro: "Kom werken bij de leukste horecagroep van Scheveningen!",
+        jobs_apply: "Solliciteer in 1 minuut", jobs_apply_sub: "Alle locaties &middot; Scheveningen",
         benefits_title: 'Waarom werken bij <em>Balance</em>?',
         benefit_1_title: "Balance Academy", benefit_1_desc: "geen ervaring nodig, wij trainen je",
         benefit_2_title: "Flexibele uren", benefit_2_desc: "fulltime, parttime, seizoen of oproep",
@@ -1512,9 +1524,10 @@ const translations = {
         restaurants_label: "Our Brands", restaurants_title: '8 Concepts, <em>1 Family</em>',
         videos_label: "Behind the Scenes", videos_title: '<em>Atmo</em>sphere',
         video_hint: "&#8592; Drag to explore &#8594;",
+        restaurants_hint: "&#8592; Drag to explore &#8594;",
         jobs_label: "Careers", jobs_title: 'Join <em>Our Team</em>',
-        jobs_intro: "We're always looking for enthusiastic people who want to make a difference. No experience? No problem &mdash; we'll train you. Apply today and work at the most beautiful location in the Netherlands.",
-        jobs_apply: "Apply Now", jobs_apply_sub: "All locations &middot; Scheveningen",
+        jobs_intro: "Come work at the coolest hospitality group in Scheveningen!",
+        jobs_apply: "Apply in 1 minute", jobs_apply_sub: "All locations &middot; Scheveningen",
         benefits_title: 'Why work at <em>Balance</em>?',
         benefit_1_title: "Balance Academy", benefit_1_desc: "no experience needed, we'll train you",
         benefit_2_title: "Flexible hours", benefit_2_desc: "full-time, part-time, seasonal or on-call",
@@ -1563,7 +1576,7 @@ function renderRestaurants() {
     const grid = document.getElementById('restaurantsGrid');
     const badge = translations[currentLang].badge_coming;
     grid.innerHTML = restaurants.map((r, i) => `
-        <a href="${r.url}" target="_blank" rel="noopener" class="restaurant-card reveal reveal-delay-${Math.min((i % 4) + 1, 4)}">
+        <a href="${r.url}" target="_blank" rel="noopener" class="restaurant-card">
             ${r.status === 'coming-soon' ? `<div class="badge">${badge}</div>` : ''}
             <div class="restaurant-card-media">
                 ${r.img ? `<img src="${r.img}" alt="${r.name}" loading="lazy">` : `<span class="restaurant-card-media-placeholder">${translations[currentLang].coming_soon_placeholder}</span>`}
@@ -1597,12 +1610,10 @@ function renderJobs() {
 
 function renderFooter() {
     const t = translations[currentLang];
-    document.getElementById('footerRestaurants').innerHTML = restaurants.slice(0, 5).map(r =>
+    document.getElementById('footerRestaurants').innerHTML = restaurants.map(r =>
         `<li><a href="${r.url}" target="_blank" rel="noopener">${r.name}</a></li>`
     ).join('');
-    document.getElementById('footerMore').innerHTML = restaurants.slice(5).map(r =>
-        `<li><a href="${r.url}" target="_blank" rel="noopener">${r.name}</a></li>`
-    ).join('') + `<li><a href="#about" data-i18n="footer_about">${t.footer_about}</a></li><li><a href="#videos" data-i18n="footer_videos">${t.footer_videos}</a></li>`;
+    document.getElementById('footerMore').innerHTML = `<li><a href="#about" data-i18n="footer_about">${t.footer_about}</a></li><li><a href="#videos" data-i18n="footer_videos">${t.footer_videos}</a></li><li><a href="#jobs" data-i18n="footer_jobs_link">${t.footer_jobs_link}</a></li>`;
 }
 
 // ============ MARQUEE ============
@@ -1620,7 +1631,7 @@ window.addEventListener('scroll', () => {
     document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
 
     // Nav active state
-    const sections = ['about', 'restaurants', 'videos', 'jobs'];
+    const sections = ['jobs', 'about', 'restaurants', 'videos'];
     const scrollPos = window.scrollY + 160;
     let current = '';
     sections.forEach(id => {
@@ -1634,12 +1645,15 @@ window.addEventListener('scroll', () => {
 
 // ============ DRAG SCROLL ============
 function initDragScroll() {
-    const el = document.getElementById('videoReelScroll');
-    let isDown = false, startX, scrollLeft;
-    el.addEventListener('mousedown', (e) => { isDown = true; el.classList.add('grabbing'); startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; });
-    el.addEventListener('mouseleave', () => { isDown = false; el.classList.remove('grabbing'); });
-    el.addEventListener('mouseup', () => { isDown = false; el.classList.remove('grabbing'); });
-    el.addEventListener('mousemove', (e) => { if (!isDown) return; e.preventDefault(); const x = e.pageX - el.offsetLeft; el.scrollLeft = scrollLeft - (x - startX) * 1.5; });
+    ['videoReelScroll', 'restaurantsGrid'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        let isDown = false, startX, scrollLeft;
+        el.addEventListener('mousedown', (e) => { isDown = true; el.classList.add('grabbing'); startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; });
+        el.addEventListener('mouseleave', () => { isDown = false; el.classList.remove('grabbing'); });
+        el.addEventListener('mouseup', () => { isDown = false; el.classList.remove('grabbing'); });
+        el.addEventListener('mousemove', (e) => { if (!isDown) return; e.preventDefault(); const x = e.pageX - el.offsetLeft; el.scrollLeft = scrollLeft - (x - startX) * 1.5; });
+    });
 }
 
 // ============ SCROLL REVEAL ============
