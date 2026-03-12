@@ -4,133 +4,134 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Balance Hospitality — Admin</title>
-    <script>
-        // Serve config.yml from /admin/ path
-        window.CMS_MANUAL_INIT = true;
-    </script>
-    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
-    <script>
-        CMS.init({
-            config: {
-                load_config_file: false,
-                backend: {
-                    name: "github",
-                    repo: "software368/Balancehospitality",
-                    branch: "master",
-                    base_url: "https://balancehospitality.vercel.app",
-                    auth_endpoint: "/api/auth"
-                },
-                media_folder: "images",
-                public_folder: "/images",
-                collections: [
-                    {
-                        name: "settings",
-                        label: "Site Settings",
-                        files: [
-                            {
-                                name: "hero",
-                                label: "Hero Section",
-                                file: "content/settings.json",
-                                fields: [
-                                    { name: "hero_video_url", label: "Hero Video (Vimeo URL)", widget: "string" },
-                                    { name: "hero_eyebrow_nl", label: "Eyebrow (NL)", widget: "string" },
-                                    { name: "hero_eyebrow_en", label: "Eyebrow (EN)", widget: "string" },
-                                    { name: "hero_title_gold", label: "Title Gold Word", widget: "string" },
-                                    { name: "hero_title_white", label: "Title White Word", widget: "string" },
-                                    { name: "hero_subtitle_nl", label: "Subtitle (NL)", widget: "string" },
-                                    { name: "hero_subtitle_en", label: "Subtitle (EN)", widget: "string" },
-                                    { name: "hero_cta_nl", label: "CTA Button (NL)", widget: "string" },
-                                    { name: "hero_cta_en", label: "CTA Button (EN)", widget: "string" },
-                                    { name: "hero_cta2_nl", label: "Ghost CTA (NL)", widget: "string" },
-                                    { name: "hero_cta2_en", label: "Ghost CTA (EN)", widget: "string" },
-                                    { name: "about_label_nl", label: "About Label (NL)", widget: "string" },
-                                    { name: "about_label_en", label: "About Label (EN)", widget: "string" },
-                                    { name: "about_heading_nl", label: "About Heading (NL)", widget: "string" },
-                                    { name: "about_heading_en", label: "About Heading (EN)", widget: "string" },
-                                    { name: "about_text1_nl", label: "About Paragraph 1 (NL)", widget: "text" },
-                                    { name: "about_text1_en", label: "About Paragraph 1 (EN)", widget: "text" },
-                                    { name: "about_text2_nl", label: "About Paragraph 2 (NL)", widget: "text" },
-                                    { name: "about_text2_en", label: "About Paragraph 2 (EN)", widget: "text" },
-                                    { name: "about_quote_nl", label: "About Quote (NL)", widget: "string" },
-                                    { name: "about_quote_en", label: "About Quote (EN)", widget: "string" },
-                                    { name: "about_video_url", label: "About Video (Vimeo URL)", widget: "string" },
-                                    { name: "jobs_label_nl", label: "Jobs Label (NL)", widget: "string" },
-                                    { name: "jobs_label_en", label: "Jobs Label (EN)", widget: "string" },
-                                    { name: "jobs_title_nl", label: "Jobs Title (NL)", widget: "string" },
-                                    { name: "jobs_title_en", label: "Jobs Title (EN)", widget: "string" },
-                                    { name: "jobs_intro_nl", label: "Jobs Intro (NL)", widget: "text" },
-                                    { name: "jobs_intro_en", label: "Jobs Intro (EN)", widget: "text" },
-                                    { name: "jobs_apply_url", label: "Apply Button URL", widget: "string" },
-                                    { name: "jobs_apply_nl", label: "Apply Button (NL)", widget: "string" },
-                                    { name: "jobs_apply_en", label: "Apply Button (EN)", widget: "string" },
-                                    { name: "footer_desc_nl", label: "Footer Description (NL)", widget: "text" },
-                                    { name: "footer_desc_en", label: "Footer Description (EN)", widget: "text" },
-                                    { name: "footer_instagram", label: "Instagram URL", widget: "string" }
-                                ]
-                            },
-                            {
-                                name: "videos",
-                                label: "Video Reel",
-                                file: "content/videos.json",
-                                fields: [
-                                    {
-                                        name: "items",
-                                        label: "Videos / Images",
-                                        widget: "list",
-                                        fields: [
-                                            { name: "label", label: "Label", widget: "string" },
-                                            { name: "type", label: "Type", widget: "select", options: ["vimeo", "image"] },
-                                            { name: "url", label: "Vimeo Embed URL or Image URL", widget: "string" }
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        name: "restaurants",
-                        label: "Restaurants",
-                        folder: "content/restaurants",
-                        extension: "json",
-                        format: "json",
-                        create: true,
-                        slug: "{{slug}}",
-                        fields: [
-                            { name: "name", label: "Restaurant Name", widget: "string" },
-                            { name: "order", label: "Sort Order (1 = first)", widget: "number", default: 1 },
-                            { name: "url", label: "Website URL", widget: "string" },
-                            { name: "status", label: "Status", widget: "select", options: ["active", "coming-soon"] },
-                            { name: "cuisine", label: "Cuisine Tag", widget: "string" },
-                            { name: "img", label: "Photo URL", widget: "string", required: false },
-                            { name: "image", label: "Photo Upload", widget: "image", required: false },
-                            { name: "desc_nl", label: "Description (NL)", widget: "text" },
-                            { name: "desc_en", label: "Description (EN)", widget: "text" }
-                        ]
-                    },
-                    {
-                        name: "jobs",
-                        label: "Jobs / Vacatures",
-                        folder: "content/jobs",
-                        extension: "json",
-                        format: "json",
-                        create: true,
-                        slug: "{{slug}}",
-                        fields: [
-                            { name: "order", label: "Sort Order (1 = first)", widget: "number", default: 1 },
-                            { name: "cat_nl", label: "Category (NL)", widget: "string" },
-                            { name: "cat_en", label: "Category (EN)", widget: "string" },
-                            { name: "title_nl", label: "Job Title (NL)", widget: "string" },
-                            { name: "title_en", label: "Job Title (EN)", widget: "string" },
-                            { name: "sub_nl", label: "Subtitle (NL)", widget: "string" },
-                            { name: "sub_en", label: "Subtitle (EN)", widget: "string" },
-                            { name: "detail_nl", label: "Details (NL)", widget: "string" },
-                            { name: "detail_en", label: "Details (EN)", widget: "string" }
-                        ]
-                    }
-                ]
-            }
-        });
-    </script>
+    <style>body { margin: 0; }</style>
 </head>
-<body></body>
+<body>
+    <div id="nc-root"></div>
+    <script>window.CMS_MANUAL_INIT = true;</script>
+    <script src="https://unpkg.com/decap-cms@3.1.7/dist/decap-cms.js"></script>
+    <script>
+        var defined = {
+            load_config_file: false,
+            backend: {
+                name: "github",
+                repo: "software368/Balancehospitality",
+                branch: "master",
+                base_url: "https://balancehospitality.vercel.app",
+                auth_endpoint: "/api/auth"
+            },
+            media_folder: "images",
+            public_folder: "/images",
+            collections: [
+                {
+                    name: "settings",
+                    label: "Site Settings",
+                    files: [
+                        {
+                            name: "hero",
+                            label: "Hero Section",
+                            file: "content/settings.json",
+                            fields: [
+                                { name: "hero_video_url", label: "Hero Video (Vimeo URL)", widget: "string" },
+                                { name: "hero_eyebrow_nl", label: "Eyebrow (NL)", widget: "string" },
+                                { name: "hero_eyebrow_en", label: "Eyebrow (EN)", widget: "string" },
+                                { name: "hero_title_gold", label: "Title Gold Word", widget: "string" },
+                                { name: "hero_title_white", label: "Title White Word", widget: "string" },
+                                { name: "hero_subtitle_nl", label: "Subtitle (NL)", widget: "string" },
+                                { name: "hero_subtitle_en", label: "Subtitle (EN)", widget: "string" },
+                                { name: "hero_cta_nl", label: "CTA Button (NL)", widget: "string" },
+                                { name: "hero_cta_en", label: "CTA Button (EN)", widget: "string" },
+                                { name: "hero_cta2_nl", label: "Ghost CTA (NL)", widget: "string" },
+                                { name: "hero_cta2_en", label: "Ghost CTA (EN)", widget: "string" },
+                                { name: "about_label_nl", label: "About Label (NL)", widget: "string" },
+                                { name: "about_label_en", label: "About Label (EN)", widget: "string" },
+                                { name: "about_heading_nl", label: "About Heading (NL)", widget: "string" },
+                                { name: "about_heading_en", label: "About Heading (EN)", widget: "string" },
+                                { name: "about_text1_nl", label: "About Paragraph 1 (NL)", widget: "text" },
+                                { name: "about_text1_en", label: "About Paragraph 1 (EN)", widget: "text" },
+                                { name: "about_text2_nl", label: "About Paragraph 2 (NL)", widget: "text" },
+                                { name: "about_text2_en", label: "About Paragraph 2 (EN)", widget: "text" },
+                                { name: "about_quote_nl", label: "About Quote (NL)", widget: "string" },
+                                { name: "about_quote_en", label: "About Quote (EN)", widget: "string" },
+                                { name: "about_video_url", label: "About Video (Vimeo URL)", widget: "string" },
+                                { name: "jobs_label_nl", label: "Jobs Label (NL)", widget: "string" },
+                                { name: "jobs_label_en", label: "Jobs Label (EN)", widget: "string" },
+                                { name: "jobs_title_nl", label: "Jobs Title (NL)", widget: "string" },
+                                { name: "jobs_title_en", label: "Jobs Title (EN)", widget: "string" },
+                                { name: "jobs_intro_nl", label: "Jobs Intro (NL)", widget: "text" },
+                                { name: "jobs_intro_en", label: "Jobs Intro (EN)", widget: "text" },
+                                { name: "jobs_apply_url", label: "Apply Button URL", widget: "string" },
+                                { name: "jobs_apply_nl", label: "Apply Button (NL)", widget: "string" },
+                                { name: "jobs_apply_en", label: "Apply Button (EN)", widget: "string" },
+                                { name: "footer_desc_nl", label: "Footer Description (NL)", widget: "text" },
+                                { name: "footer_desc_en", label: "Footer Description (EN)", widget: "text" },
+                                { name: "footer_instagram", label: "Instagram URL", widget: "string" }
+                            ]
+                        },
+                        {
+                            name: "videos",
+                            label: "Video Reel",
+                            file: "content/videos.json",
+                            fields: [
+                                {
+                                    name: "items",
+                                    label: "Videos / Images",
+                                    widget: "list",
+                                    fields: [
+                                        { name: "label", label: "Label", widget: "string" },
+                                        { name: "type", label: "Type", widget: "select", options: ["vimeo", "image"] },
+                                        { name: "url", label: "Vimeo Embed URL or Image URL", widget: "string" }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: "restaurants",
+                    label: "Restaurants",
+                    folder: "content/restaurants",
+                    extension: "json",
+                    format: "json",
+                    create: true,
+                    slug: "{{slug}}",
+                    fields: [
+                        { name: "name", label: "Restaurant Name", widget: "string" },
+                        { name: "order", label: "Sort Order (1 = first)", widget: "number", default: 1 },
+                        { name: "url", label: "Website URL", widget: "string" },
+                        { name: "status", label: "Status", widget: "select", options: ["active", "coming-soon"] },
+                        { name: "cuisine", label: "Cuisine Tag", widget: "string" },
+                        { name: "img", label: "Photo URL", widget: "string", required: false },
+                        { name: "image", label: "Photo Upload", widget: "image", required: false },
+                        { name: "desc_nl", label: "Description (NL)", widget: "text" },
+                        { name: "desc_en", label: "Description (EN)", widget: "text" }
+                    ]
+                },
+                {
+                    name: "jobs",
+                    label: "Jobs / Vacatures",
+                    folder: "content/jobs",
+                    extension: "json",
+                    format: "json",
+                    create: true,
+                    slug: "{{slug}}",
+                    fields: [
+                        { name: "order", label: "Sort Order (1 = first)", widget: "number", default: 1 },
+                        { name: "cat_nl", label: "Category (NL)", widget: "string" },
+                        { name: "cat_en", label: "Category (EN)", widget: "string" },
+                        { name: "title_nl", label: "Job Title (NL)", widget: "string" },
+                        { name: "title_en", label: "Job Title (EN)", widget: "string" },
+                        { name: "sub_nl", label: "Subtitle (NL)", widget: "string" },
+                        { name: "sub_en", label: "Subtitle (EN)", widget: "string" },
+                        { name: "detail_nl", label: "Details (NL)", widget: "string" },
+                        { name: "detail_en", label: "Details (EN)", widget: "string" }
+                    ]
+                }
+            ]
+        };
+        window.onload = function() {
+            CMS.init({ config: defined });
+        };
+    </script>
+</body>
 </html>
