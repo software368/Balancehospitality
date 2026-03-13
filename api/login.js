@@ -50,6 +50,6 @@ module.exports = async function handler(req, res) {
 
         return res.status(401).json({ error: 'Invalid email or password' });
     } catch (e) {
-        return res.status(500).json({ error: 'Server error' });
+        return res.status(500).json({ error: 'Server error', detail: e.message });
     }
 };
