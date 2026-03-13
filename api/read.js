@@ -1,25 +1,29 @@
+const { methodGuard, originGuard, parseBody, validateSession, validateFilePath } = require('./_shared');
+
 module.exports = async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
+    if (!methodGuard(req, res, 'POST')) return;
+    if (!originGuard(req, res)) return;
 
-    let body = req.body;
-    if (typeof body === 'string') body = JSON.parse(body);
-    const { session, file } = body;
+    const body = parseBody(req);
 
-    if (session !== (process.env.EDIT_SESSION_SECRET || 'bhg-session-2026-x9k4m')) {
+    if (!validateSession(body)) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    if (!file) {
-        return res.status(400).json({ error: 'Missing file parameter' });
+    const normalizedFile = validateFilePath(body.file);
+    if (!normalizedFile) {
+        return res.status(403).json({ error: 'File path not allowed' });
     }
 
     const token = process.env.GITHUB_PAT;
+    if (!token) {
+        return res.status(500).json({ error: 'Server configuration error' });
+    }
+
     const repo = 'software368/Balancehospitality';
 
     try {
-        const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/${file}?ref=master`, {
+        const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/${normalizedFile}?ref=master`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Accept': 'application/vnd.github.v3+json'
@@ -27,8 +31,7 @@ module.exports = async function handler(req, res) {
         });
 
         if (!getRes.ok) {
-            const err = await getRes.json();
-            return res.status(getRes.status).json({ error: err.message });
+            return res.status(502).json({ error: 'Failed to read file from repository' });
         }
 
         const data = await getRes.json();
@@ -36,6 +39,6 @@ module.exports = async function handler(req, res) {
 
         return res.status(200).json({ success: true, content, sha: data.sha });
     } catch (error) {
-        return res.status(500).json({ error: 'Failed to read: ' + error.message });
+        return res.status(500).json({ error: 'Failed to read file' });
     }
 };

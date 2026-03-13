@@ -330,7 +330,7 @@
     return el.dataset.veId;
   }
 
-  function confirm(msg) {
+  function veConfirm(msg) {
     return new Promise(resolve => {
       const d = document.createElement('div');
       d.className = 've-confirm';
@@ -392,13 +392,25 @@
     recalcChanges();
   }
 
-  function undo() { if (historyIndex <= 0) return; historyIndex--; restoreState(historyStack[historyIndex]); updateUndoButtons(); }
-  function redo() { if (historyIndex >= historyStack.length - 1) return; historyIndex++; restoreState(historyStack[historyIndex]); updateUndoButtons(); }
+  function undo() {
+    if (historyIndex <= 0) return;
+    historyIndex--;
+    restoreState(historyStack[historyIndex]);
+    updateUndoButtons();
+  }
+
+  function redo() {
+    if (historyIndex >= historyStack.length - 1) return;
+    historyIndex++;
+    restoreState(historyStack[historyIndex]);
+    updateUndoButtons();
+  }
 
   function updateUndoButtons() {
-    const u = $('.ve-undo-btn'); const r = $('.ve-redo-btn');
-    if (u) u.disabled = historyIndex <= 0;
-    if (r) r.disabled = historyIndex >= historyStack.length - 1;
+    const undoBtn = $('.ve-undo-btn');
+    const redoBtn = $('.ve-redo-btn');
+    if (undoBtn) undoBtn.disabled = historyIndex <= 0;
+    if (redoBtn) redoBtn.disabled = historyIndex >= historyStack.length - 1;
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -480,7 +492,9 @@
     updateToolbar();
   }
 
-  function totalChanges() { return Object.keys(pendingChanges).length + Object.keys(linkChanges).length + Object.keys(imageChanges).length; }
+  function totalChanges() {
+    return Object.keys(pendingChanges).length + Object.keys(linkChanges).length + Object.keys(imageChanges).length;
+  }
 
   function updateToolbar() {
     const c = totalChanges();
@@ -494,7 +508,12 @@
   // LINK POPOVER
   // ═══════════════════════════════════════════════════════════════════
   let activePopover = null;
-  function closePopover() { if (activePopover) { activePopover.remove(); activePopover = null; } }
+  function closePopover() {
+    if (activePopover) {
+      activePopover.remove();
+      activePopover = null;
+    }
+  }
 
   function showLinkPopover(el) {
     closePopover();
@@ -1362,7 +1381,7 @@
 
       // Delete
       item.querySelector('[data-action="del"]').addEventListener('click', async () => {
-        const ok = await confirm('Delete this section?');
+        const ok = await veConfirm('Delete this section?');
         if (!ok) return;
         pushHistory();
         sec.el.remove();
