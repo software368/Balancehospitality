@@ -5,7 +5,7 @@ function checkOrigin(req) {
   const origin = req.headers.origin || req.headers.referer || '';
   const originHost = (() => {
     try { return new URL(origin).hostname; }
-    catch { return ''; }
+    catch (e) { return ''; }
   })();
   if (origin && !ALLOWED_HOSTS.some(h => originHost === h || originHost.endsWith('.' + h))) {
     return false;
