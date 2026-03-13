@@ -21,35 +21,29 @@ module.exports = async function handler(req, res) {
 
     try {
         const body = parseBody(req);
-        const email = (body.email || '').toLowerCase().trim();
         const password = body.password || '';
 
-        const validEmail = (process.env.EDIT_EMAIL || '').toLowerCase().trim();
         const validPassword = process.env.EDIT_PASSWORD || '';
         const sessionSecret = process.env.EDIT_SESSION_SECRET || '';
 
-        if (!validEmail || !validPassword || !sessionSecret) {
+        if (!validPassword || !sessionSecret) {
             return res.status(500).json({ error: 'Server configuration error' });
         }
 
-        if (!email || !password) {
-            return res.status(400).json({ error: 'Email and password required' });
+        if (!password) {
+            return res.status(400).json({ error: 'Password required' });
         }
 
         entry.count++;
         loginAttempts.set(ip, entry);
 
-        // Constant-time-ish comparison to avoid timing attacks
-        const emailMatch = email.length === validEmail.length && email === validEmail;
-        const passMatch = password.length === validPassword.length && password === validPassword;
-
-        if (emailMatch && passMatch) {
+        if (password === validPassword) {
             loginAttempts.delete(ip);
             return res.status(200).json({ success: true, session: sessionSecret });
         }
 
-        return res.status(401).json({ error: 'Invalid email or password' });
+        return res.status(401).json({ error: 'Invalid password' });
     } catch (e) {
-        return res.status(500).json({ error: 'Server error', detail: e.message });
+        return res.status(500).json({ error: 'Server error' });
     }
 };

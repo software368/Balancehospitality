@@ -1549,23 +1549,20 @@
     const overlay = document.createElement('div');
     overlay.className = 've-overlay';
     overlay.innerHTML = `<div class="ve-login"><h2>Visual Editor</h2><p>Log in to edit this site</p>
-      <input type="email" class="ve-email" placeholder="Email" autocomplete="email">
       <input type="password" class="ve-pass" placeholder="Password" autocomplete="current-password">
       <button class="ve-login-btn">Log In</button><div class="ve-login-error"></div></div>`;
     editorRoot.appendChild(overlay);
 
-    const emailInput = overlay.querySelector('.ve-email');
     const passInput = overlay.querySelector('.ve-pass');
     const btn = overlay.querySelector('.ve-login-btn');
     const errEl = overlay.querySelector('.ve-login-error');
 
     async function doLogin() {
-      const email = emailInput.value.trim();
       const pass = passInput.value;
-      if (!email || !pass) { errEl.textContent = 'Enter email and password'; return; }
+      if (!pass) { errEl.textContent = 'Enter password'; return; }
       btn.disabled = true; btn.textContent = 'Logging in...'; errEl.textContent = '';
       try {
-        const res = await fetch(CONFIG.loginUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: pass }) });
+        const res = await fetch(CONFIG.loginUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass }) });
         const data = await res.json();
         if (data.success && data.session) {
           session = data.session;
@@ -1580,8 +1577,7 @@
     }
     btn.addEventListener('click', doLogin);
     passInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doLogin(); });
-    emailInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') passInput.focus(); });
-    setTimeout(() => emailInput.focus(), 100);
+    setTimeout(() => passInput.focus(), 100);
   }
 
   // ═══════════════════════════════════════════════════════════════════
