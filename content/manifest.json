@@ -1,0 +1,4 @@
+{
+  "restaurants": ["miss-maui", "oceans-beach-house", "oyster-pearl", "volare", "big-bell", "lady-lobster", "brooklyn", "columbus"],
+  "jobs": ["keuken-kok", "chef-kok", "bar", "host", "bediening", "assistent-manager"]
+}

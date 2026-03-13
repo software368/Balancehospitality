@@ -23,6 +23,9 @@
   const CONFIG = {
     loginUrl:       userCfg.loginUrl       || attr('login-url')      || '/api/login',
     saveUrl:        userCfg.saveUrl        || attr('save-url')       || '/api/save',
+    readUrl:        userCfg.readUrl        || attr('read-url')       || '/api/read',
+    uploadUrl:      userCfg.uploadUrl      || attr('upload-url')     || '/api/upload',
+    deleteUrl:      userCfg.deleteUrl      || attr('delete-url')     || '/api/delete',
     saveFile:       userCfg.saveFile       || attr('save-file')      || 'index.html',
     sessionKey:     userCfg.sessionKey     || attr('session-key')    || 've-session',
     activate:       userCfg.activate       || attr('activate')       || '?edit',
@@ -71,6 +74,10 @@
     structuredData: '',
     customHeadTags: ''
   };
+
+  // Content Manager state
+  let contentCache = {};   // path -> { content (parsed), sha, raw }
+  let manifestData = null; // { restaurants: [...slugs], jobs: [...slugs] }
 
   // Layout state
   let leftSidebarOpen = true;
@@ -275,6 +282,64 @@
     .ve-gs-color-row input[type="text"] { flex: 1; padding: 4px 8px; background: ${BG2}; border: 1px solid ${BORDER}; border-radius: 4px; color: ${WHITE}; font-size: 0.75rem; outline: none; font-family: monospace; }
     .ve-gs-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
     .ve-gs-actions button { padding: 8px 20px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: ${VF}; border: none; }
+
+    /* ── Content Manager ── */
+    .ve-cm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: flex-start; justify-content: center; pointer-events: auto; z-index: 70; padding-top: 60px; overflow-y: auto; }
+    .ve-cm-panel { background: ${BG}; border: 1px solid ${GOLD_DIM}; border-radius: 16px; width: 820px; max-width: 95vw; padding: 0; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; }
+    .ve-cm-header { padding: 20px 24px; border-bottom: 1px solid ${BORDER}; display: flex; align-items: center; justify-content: space-between; }
+    .ve-cm-header h3 { color: ${WHITE}; font-size: 1.1rem; font-family: Georgia, serif; margin: 0; }
+    .ve-cm-header button { background: none; border: none; color: ${WHITE_DIM}; font-size: 1.2rem; cursor: pointer; padding: 4px 8px; }
+    .ve-cm-tabs { display: flex; border-bottom: 1px solid ${BORDER}; padding: 0 24px; }
+    .ve-cm-tab { padding: 10px 16px; color: ${WHITE_DIMMER}; font-size: 0.75rem; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+    .ve-cm-tab:hover { color: ${WHITE_DIM}; }
+    .ve-cm-tab.active { color: ${GOLD}; border-bottom-color: ${GOLD}; }
+    .ve-cm-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+    .ve-cm-loading { text-align: center; color: ${WHITE_DIM}; padding: 40px; font-size: 0.85rem; }
+    .ve-cm-field { margin-bottom: 14px; }
+    .ve-cm-field label { display: block; color: ${WHITE_DIM}; font-size: 0.7rem; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .ve-cm-field input, .ve-cm-field textarea, .ve-cm-field select { width: 100%; padding: 8px 12px; background: ${BG2}; border: 1px solid ${BORDER}; border-radius: 6px; color: ${WHITE}; font-size: 0.8rem; outline: none; font-family: ${VF}; }
+    .ve-cm-field textarea { min-height: 60px; resize: vertical; }
+    .ve-cm-field input:focus, .ve-cm-field textarea:focus { border-color: ${GOLD_DIM}; }
+    .ve-cm-row { display: flex; gap: 12px; }
+    .ve-cm-row .ve-cm-field { flex: 1; }
+    .ve-cm-section { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid ${BORDER}; }
+    .ve-cm-section h4 { color: ${GOLD}; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .ve-cm-list-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: ${BG2}; border: 1px solid ${BORDER}; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+    .ve-cm-list-item:hover { border-color: ${GOLD_DIM}; background: rgba(198,163,85,0.05); }
+    .ve-cm-list-item img { width: 48px; height: 48px; border-radius: 6px; object-fit: cover; background: #333; }
+    .ve-cm-list-item .ve-cm-item-info { flex: 1; overflow: hidden; }
+    .ve-cm-list-item .ve-cm-item-name { color: ${WHITE}; font-size: 0.85rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ve-cm-list-item .ve-cm-item-sub { color: ${WHITE_DIMMER}; font-size: 0.7rem; }
+    .ve-cm-list-actions { display: flex; gap: 4px; }
+    .ve-cm-list-actions button { background: none; border: 1px solid ${BORDER}; color: ${WHITE_DIM}; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; transition: all 0.2s; }
+    .ve-cm-list-actions button:hover { border-color: ${GOLD_DIM}; color: ${GOLD}; }
+    .ve-cm-list-actions button.danger:hover { border-color: ${RED}; color: ${RED}; }
+    .ve-cm-add-btn { display: block; width: 100%; padding: 10px; background: transparent; border: 1px dashed ${GOLD_DIM}; border-radius: 8px; color: ${GOLD}; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; text-align: center; margin-top: 8px; }
+    .ve-cm-add-btn:hover { background: rgba(198,163,85,0.08); border-color: ${GOLD}; }
+    .ve-cm-form { background: ${BG2}; border: 1px solid ${BORDER}; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+    .ve-cm-form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+    .ve-cm-form-actions button { padding: 6px 16px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-family: ${VF}; border: none; }
+    .ve-cm-btn-save { background: ${GOLD}; color: #111; font-weight: 600; }
+    .ve-cm-btn-save:hover { background: ${GOLD_HOVER}; }
+    .ve-cm-btn-cancel { background: transparent; color: ${WHITE_DIM}; border: 1px solid ${BORDER} !important; }
+    .ve-cm-img-preview { width: 100%; max-height: 150px; object-fit: cover; border-radius: 6px; margin-bottom: 8px; background: #333; }
+    .ve-cm-upload-btn { display: inline-block; padding: 6px 14px; background: ${BG3}; color: rgba(255,255,255,0.6); border: 1px solid ${BORDER}; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-family: ${VF}; }
+    .ve-cm-upload-btn:hover { color: ${WHITE}; border-color: ${WHITE_DIMMER}; }
+    .ve-cm-lang-toggle { display: flex; gap: 0; margin-bottom: 12px; }
+    .ve-cm-lang-btn { padding: 6px 16px; font-size: 0.7rem; cursor: pointer; border: 1px solid ${BORDER}; background: transparent; color: ${WHITE_DIM}; text-transform: uppercase; letter-spacing: 0.5px; }
+    .ve-cm-lang-btn:first-child { border-radius: 6px 0 0 6px; }
+    .ve-cm-lang-btn:last-child { border-radius: 0 6px 6px 0; }
+    .ve-cm-lang-btn.active { background: rgba(198,163,85,0.15); color: ${GOLD}; border-color: ${GOLD_DIM}; }
+    .ve-cm-status { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .ve-cm-status-active { background: rgba(46,204,113,0.15); color: #2ecc71; }
+    .ve-cm-status-coming { background: rgba(198,163,85,0.15); color: ${GOLD}; }
+
+    /* ── Preview ── */
+    .ve-preview-overlay { position: fixed; inset: 0; background: ${BG}; pointer-events: auto; z-index: 70; display: flex; flex-direction: column; }
+    .ve-preview-bar { padding: 12px 24px; background: ${BG2}; border-bottom: 1px solid ${BORDER}; display: flex; align-items: center; justify-content: space-between; }
+    .ve-preview-bar span { color: ${WHITE}; font-size: 0.85rem; font-weight: 500; }
+    .ve-preview-bar button { padding: 6px 16px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-family: ${VF}; border: none; }
+    .ve-preview-frame { flex: 1; border: none; background: #fff; }
 
     /* ── Confirm Dialog ── */
     .ve-confirm { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; pointer-events: auto; z-index: 80; }
@@ -575,8 +640,20 @@
     const preview = pop.querySelector('.ve-img-preview');
     const srcInput = pop.querySelector('.ve-pop-imgsrc');
     srcInput.addEventListener('input', () => { preview.src = srcInput.value; });
-    pop.querySelector('.ve-pop-file').addEventListener('change', function () {
-      if (this.files[0]) { const u = URL.createObjectURL(this.files[0]); preview.src = u; srcInput.value = u; }
+    pop.querySelector('.ve-pop-file').addEventListener('change', async function () {
+      if (!this.files[0]) return;
+      const localPreview = URL.createObjectURL(this.files[0]);
+      preview.src = localPreview;
+      srcInput.value = 'Uploading...';
+      try {
+        const url = await uploadImage(this.files[0]);
+        preview.src = url;
+        srcInput.value = url;
+        showToast('Image uploaded');
+      } catch (e) {
+        srcInput.value = localPreview;
+        showToast('Upload failed: ' + e.message);
+      }
     });
     pop.querySelector('.ve-pop-apply').addEventListener('click', () => {
       pushHistory(); el.src = srcInput.value; el.alt = pop.querySelector('.ve-pop-imgalt').value; recalcChanges(); closePopover();
@@ -1045,6 +1122,629 @@
   function esc(s) { return (s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
   // ═══════════════════════════════════════════════════════════════════
+  // READ / WRITE CONTENT FILES (via API)
+  // ═══════════════════════════════════════════════════════════════════
+  async function readContentFile(path) {
+    if (contentCache[path]) return contentCache[path];
+    try {
+      const res = await fetch(CONFIG.readUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session, file: path })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Read failed');
+      const parsed = JSON.parse(data.content);
+      contentCache[path] = { content: parsed, sha: data.sha, raw: data.content };
+      return contentCache[path];
+    } catch (e) {
+      console.warn('readContentFile error:', path, e);
+      return null;
+    }
+  }
+
+  async function saveContentFile(path, content, message) {
+    const json = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
+    try {
+      const res = await fetch(CONFIG.saveUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session, file: path, content: json, message: message || 'Update ' + path })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Save failed');
+      // Update cache with new SHA
+      try { contentCache[path] = { content: JSON.parse(json), sha: data.sha, raw: json }; } catch (e) {}
+      return data;
+    } catch (e) {
+      showToast('Error saving ' + path + ': ' + e.message);
+      return null;
+    }
+  }
+
+  async function deleteContentFile(path) {
+    try {
+      const res = await fetch(CONFIG.deleteUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session, file: path })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Delete failed');
+      delete contentCache[path];
+      return true;
+    } catch (e) {
+      showToast('Error deleting: ' + e.message);
+      return false;
+    }
+  }
+
+  async function uploadImage(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const ts = Date.now();
+          const ext = file.name.split('.').pop().toLowerCase();
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').toLowerCase().replace(/\.[^.]+$/, '') + '-' + ts + '.' + ext;
+          const res = await fetch(CONFIG.uploadUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session, data: reader.result, filename: safeName })
+          });
+          const data = await res.json();
+          if (!data.success) throw new Error(data.error || 'Upload failed');
+          resolve(data.url);
+        } catch (e) { reject(e); }
+      };
+      reader.onerror = () => reject(new Error('File read failed'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function loadManifest() {
+    if (manifestData) return manifestData;
+    const result = await readContentFile('content/manifest.json');
+    if (result) { manifestData = result.content; return manifestData; }
+    manifestData = { restaurants: [], jobs: [] };
+    return manifestData;
+  }
+
+  function slugify(str) {
+    return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // CONTENT MANAGER PANEL
+  // ═══════════════════════════════════════════════════════════════════
+  let cmLang = 'nl';
+
+  function showContentManager() {
+    closePopover();
+    const ov = document.createElement('div');
+    ov.className = 've-cm-overlay';
+    ov.innerHTML = `<div class="ve-cm-panel">
+      <div class="ve-cm-header"><h3>Content Manager</h3><button class="ve-cm-close">&times;</button></div>
+      <div class="ve-cm-tabs">
+        <div class="ve-cm-tab active" data-tab="settings">Settings</div>
+        <div class="ve-cm-tab" data-tab="restaurants">Restaurants</div>
+        <div class="ve-cm-tab" data-tab="jobs">Jobs</div>
+        <div class="ve-cm-tab" data-tab="videos">Videos</div>
+      </div>
+      <div class="ve-cm-body"><div class="ve-cm-loading">Loading content...</div></div>
+    </div>`;
+    editorRoot.appendChild(ov);
+
+    const body = ov.querySelector('.ve-cm-body');
+    let activeTab = 'settings';
+
+    // Tab switching
+    ov.querySelectorAll('.ve-cm-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        ov.querySelectorAll('.ve-cm-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        activeTab = tab.dataset.tab;
+        renderTab();
+      });
+    });
+
+    async function renderTab() {
+      body.innerHTML = '<div class="ve-cm-loading">Loading...</div>';
+      if (activeTab === 'settings') await renderSettingsTab(body);
+      else if (activeTab === 'restaurants') await renderRestaurantsTab(body);
+      else if (activeTab === 'jobs') await renderJobsTab(body);
+      else if (activeTab === 'videos') await renderVideosTab(body);
+    }
+
+    // Close
+    ov.querySelector('.ve-cm-close').addEventListener('click', () => ov.remove());
+    ov.addEventListener('click', (e) => { if (e.target === ov) ov.remove(); });
+
+    renderTab();
+  }
+
+  function langToggleHTML() {
+    return `<div class="ve-cm-lang-toggle">
+      <button class="ve-cm-lang-btn ${cmLang === 'nl' ? 'active' : ''}" data-lang="nl">NL</button>
+      <button class="ve-cm-lang-btn ${cmLang === 'en' ? 'active' : ''}" data-lang="en">EN</button>
+    </div>`;
+  }
+
+  function bindLangToggle(container, onChange) {
+    container.querySelectorAll('.ve-cm-lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        cmLang = btn.dataset.lang;
+        container.querySelectorAll('.ve-cm-lang-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (onChange) onChange();
+      });
+    });
+  }
+
+  // ── Settings Tab ──
+  async function renderSettingsTab(body) {
+    const result = await readContentFile('content/settings.json');
+    if (!result) { body.innerHTML = '<div class="ve-cm-loading">Failed to load settings</div>'; return; }
+    const s = result.content;
+
+    function render() {
+      const suffix = cmLang === 'nl' ? '_nl' : '_en';
+      body.innerHTML = `
+        ${langToggleHTML()}
+        <div class="ve-cm-section"><h4>Hero Section</h4>
+          <div class="ve-cm-field"><label>Video URL</label><input data-key="hero_video_url" value="${esc(s.hero_video_url || '')}"></div>
+          <div class="ve-cm-field"><label>Eyebrow Text (${cmLang.toUpperCase()})</label><input data-key="hero_eyebrow${suffix}" value="${esc(s['hero_eyebrow' + suffix] || '')}"></div>
+          <div class="ve-cm-row">
+            <div class="ve-cm-field"><label>Title Gold</label><input data-key="hero_title_gold" value="${esc(s.hero_title_gold || '')}"></div>
+            <div class="ve-cm-field"><label>Title White</label><input data-key="hero_title_white" value="${esc(s.hero_title_white || '')}"></div>
+          </div>
+          <div class="ve-cm-field"><label>Subtitle (${cmLang.toUpperCase()})</label><input data-key="hero_subtitle${suffix}" value="${esc(s['hero_subtitle' + suffix] || '')}"></div>
+          <div class="ve-cm-row">
+            <div class="ve-cm-field"><label>CTA Button (${cmLang.toUpperCase()})</label><input data-key="hero_cta${suffix}" value="${esc(s['hero_cta' + suffix] || '')}"></div>
+            <div class="ve-cm-field"><label>CTA 2 (${cmLang.toUpperCase()})</label><input data-key="hero_cta2${suffix}" value="${esc(s['hero_cta2' + suffix] || '')}"></div>
+          </div>
+        </div>
+        <div class="ve-cm-section"><h4>About Section</h4>
+          <div class="ve-cm-field"><label>Label (${cmLang.toUpperCase()})</label><input data-key="about_label${suffix}" value="${esc(s['about_label' + suffix] || '')}"></div>
+          <div class="ve-cm-field"><label>Heading (${cmLang.toUpperCase()})</label><input data-key="about_heading${suffix}" value="${esc(s['about_heading' + suffix] || '')}"></div>
+          <div class="ve-cm-field"><label>Paragraph 1 (${cmLang.toUpperCase()})</label><textarea data-key="about_text1${suffix}">${esc(s['about_text1' + suffix] || '')}</textarea></div>
+          <div class="ve-cm-field"><label>Paragraph 2 (${cmLang.toUpperCase()})</label><textarea data-key="about_text2${suffix}">${esc(s['about_text2' + suffix] || '')}</textarea></div>
+          <div class="ve-cm-field"><label>Quote (${cmLang.toUpperCase()})</label><input data-key="about_quote${suffix}" value="${esc(s['about_quote' + suffix] || '')}"></div>
+          <div class="ve-cm-field"><label>About Video URL</label><input data-key="about_video_url" value="${esc(s.about_video_url || '')}"></div>
+        </div>
+        <div class="ve-cm-section"><h4>Jobs Section</h4>
+          <div class="ve-cm-row">
+            <div class="ve-cm-field"><label>Label (${cmLang.toUpperCase()})</label><input data-key="jobs_label${suffix}" value="${esc(s['jobs_label' + suffix] || '')}"></div>
+            <div class="ve-cm-field"><label>Title (${cmLang.toUpperCase()})</label><input data-key="jobs_title${suffix}" value="${esc(s['jobs_title' + suffix] || '')}"></div>
+          </div>
+          <div class="ve-cm-field"><label>Intro (${cmLang.toUpperCase()})</label><textarea data-key="jobs_intro${suffix}">${esc(s['jobs_intro' + suffix] || '')}</textarea></div>
+          <div class="ve-cm-row">
+            <div class="ve-cm-field"><label>Apply URL</label><input data-key="jobs_apply_url" value="${esc(s.jobs_apply_url || '')}"></div>
+            <div class="ve-cm-field"><label>Apply Button (${cmLang.toUpperCase()})</label><input data-key="jobs_apply${suffix}" value="${esc(s['jobs_apply' + suffix] || '')}"></div>
+          </div>
+        </div>
+        <div class="ve-cm-section"><h4>Footer</h4>
+          <div class="ve-cm-field"><label>Description (${cmLang.toUpperCase()})</label><textarea data-key="footer_desc${suffix}">${esc(s['footer_desc' + suffix] || '')}</textarea></div>
+          <div class="ve-cm-field"><label>Instagram URL</label><input data-key="footer_instagram" value="${esc(s.footer_instagram || '')}"></div>
+        </div>
+        <div class="ve-cm-form-actions"><button class="ve-cm-btn-save">Save Settings</button></div>`;
+
+      // Bind lang toggle
+      bindLangToggle(body, render);
+
+      // Bind inputs
+      body.querySelectorAll('[data-key]').forEach(input => {
+        input.addEventListener('input', () => { s[input.dataset.key] = input.value; });
+      });
+
+      // Save
+      body.querySelector('.ve-cm-btn-save').addEventListener('click', async () => {
+        const btn = body.querySelector('.ve-cm-btn-save');
+        btn.textContent = 'Saving...'; btn.disabled = true;
+        await saveContentFile('content/settings.json', s, 'Update site settings');
+        btn.textContent = 'Saved!'; setTimeout(() => { btn.textContent = 'Save Settings'; btn.disabled = false; }, 1500);
+        showToast('Settings saved');
+      });
+    }
+    render();
+  }
+
+  // ── Restaurants Tab ──
+  async function renderRestaurantsTab(body) {
+    const manifest = await loadManifest();
+    const slugs = manifest.restaurants || [];
+    const items = [];
+    for (const slug of slugs) {
+      const r = await readContentFile('content/restaurants/' + slug + '.json');
+      if (r) items.push({ slug, data: r.content });
+    }
+
+    function renderList() {
+      body.innerHTML = `
+        <div class="ve-cm-list">
+          ${items.map((item, i) => `<div class="ve-cm-list-item" data-idx="${i}">
+            ${item.data.img ? `<img src="${esc(item.data.img)}" alt="">` : `<div style="width:48px;height:48px;background:#333;border-radius:6px;"></div>`}
+            <div class="ve-cm-item-info">
+              <div class="ve-cm-item-name">${esc(item.data.name || item.slug)}</div>
+              <div class="ve-cm-item-sub">${esc(item.data.cuisine || '')} &middot; <span class="ve-cm-status ${item.data.status === 'coming-soon' ? 've-cm-status-coming' : 've-cm-status-active'}">${item.data.status || 'active'}</span></div>
+            </div>
+            <div class="ve-cm-list-actions">
+              <button data-action="edit" data-idx="${i}">Edit</button>
+              <button data-action="delete" data-idx="${i}" class="danger">Delete</button>
+            </div>
+          </div>`).join('')}
+        </div>
+        <button class="ve-cm-add-btn">+ Add Restaurant</button>`;
+
+      body.querySelectorAll('[data-action="edit"]').forEach(btn => {
+        btn.addEventListener('click', (e) => { e.stopPropagation(); showRestaurantForm(body, items[btn.dataset.idx], renderList); });
+      });
+      body.querySelectorAll('[data-action="delete"]').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btn.dataset.idx);
+          const ok = await veConfirm('Delete "' + items[idx].data.name + '"?');
+          if (!ok) return;
+          await deleteContentFile('content/restaurants/' + items[idx].slug + '.json');
+          manifest.restaurants = manifest.restaurants.filter(s => s !== items[idx].slug);
+          await saveContentFile('content/manifest.json', manifest, 'Remove restaurant: ' + items[idx].slug);
+          items.splice(idx, 1);
+          renderList();
+          showToast('Restaurant deleted');
+        });
+      });
+      body.querySelector('.ve-cm-add-btn').addEventListener('click', () => {
+        showRestaurantForm(body, null, async (newData) => {
+          const slug = slugify(newData.name || 'restaurant');
+          await saveContentFile('content/restaurants/' + slug + '.json', newData, 'Add restaurant: ' + slug);
+          manifest.restaurants.push(slug);
+          await saveContentFile('content/manifest.json', manifest, 'Add restaurant to manifest: ' + slug);
+          items.push({ slug, data: newData });
+          renderList();
+        });
+      });
+    }
+    renderList();
+  }
+
+  function showRestaurantForm(container, item, onDone) {
+    const isNew = !item;
+    const data = item ? { ...item.data } : { name: '', order: 0, url: '', status: 'active', cuisine: '', img: '', desc_nl: '', desc_en: '' };
+    const slug = item ? item.slug : '';
+
+    container.innerHTML = `
+      <button class="ve-cm-btn-cancel" style="margin-bottom:12px;">&larr; Back</button>
+      <div class="ve-cm-form">
+        <h4 style="color:#c6a355;font-size:0.8rem;margin-bottom:12px;">${isNew ? 'Add Restaurant' : 'Edit: ' + esc(data.name)}</h4>
+        <div class="ve-cm-row">
+          <div class="ve-cm-field"><label>Name</label><input data-key="name" value="${esc(data.name)}"></div>
+          <div class="ve-cm-field"><label>Cuisine</label><input data-key="cuisine" value="${esc(data.cuisine)}"></div>
+        </div>
+        <div class="ve-cm-row">
+          <div class="ve-cm-field"><label>URL</label><input data-key="url" value="${esc(data.url)}"></div>
+          <div class="ve-cm-field"><label>Order</label><input type="number" data-key="order" value="${data.order || 0}"></div>
+        </div>
+        <div class="ve-cm-field"><label>Status</label>
+          <select data-key="status"><option value="active" ${data.status === 'active' ? 'selected' : ''}>Active</option><option value="coming-soon" ${data.status === 'coming-soon' ? 'selected' : ''}>Coming Soon</option></select>
+        </div>
+        <div class="ve-cm-field">
+          <label>Image</label>
+          ${data.img ? `<img class="ve-cm-img-preview" src="${esc(data.img)}">` : ''}
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;">
+            <input data-key="img" value="${esc(data.img)}" style="flex:1;">
+            <label class="ve-cm-upload-btn">Upload<input type="file" accept="image/*" style="display:none" class="ve-cm-file-input"></label>
+          </div>
+        </div>
+        ${langToggleHTML()}
+        <div class="ve-cm-field"><label>Description (NL)</label><textarea data-key="desc_nl">${esc(data.desc_nl)}</textarea></div>
+        <div class="ve-cm-field"><label>Description (EN)</label><textarea data-key="desc_en">${esc(data.desc_en)}</textarea></div>
+        <div class="ve-cm-form-actions">
+          <button class="ve-cm-btn-cancel">Cancel</button>
+          <button class="ve-cm-btn-save">${isNew ? 'Create' : 'Save'}</button>
+        </div>
+      </div>`;
+
+    // Bind inputs
+    container.querySelectorAll('[data-key]').forEach(input => {
+      input.addEventListener('input', () => {
+        const val = input.type === 'number' ? parseInt(input.value) || 0 : input.value;
+        data[input.dataset.key] = val;
+      });
+    });
+
+    // Image upload
+    const fileInput = container.querySelector('.ve-cm-file-input');
+    if (fileInput) {
+      fileInput.addEventListener('change', async function () {
+        if (!this.files[0]) return;
+        showToast('Uploading image...');
+        try {
+          const url = await uploadImage(this.files[0]);
+          data.img = url;
+          container.querySelector('[data-key="img"]').value = url;
+          const preview = container.querySelector('.ve-cm-img-preview');
+          if (preview) preview.src = url;
+          showToast('Image uploaded');
+        } catch (e) { showToast('Upload failed: ' + e.message); }
+      });
+    }
+
+    // Cancel / Back
+    container.querySelectorAll('.ve-cm-btn-cancel').forEach(btn => {
+      btn.addEventListener('click', () => renderRestaurantsTab(container));
+    });
+
+    // Save
+    container.querySelector('.ve-cm-btn-save').addEventListener('click', async () => {
+      if (!data.name) { showToast('Name is required'); return; }
+      const btn = container.querySelector('.ve-cm-btn-save');
+      btn.textContent = 'Saving...'; btn.disabled = true;
+      if (isNew) {
+        if (typeof onDone === 'function') await onDone(data);
+        showToast('Restaurant created');
+      } else {
+        await saveContentFile('content/restaurants/' + slug + '.json', data, 'Update restaurant: ' + data.name);
+        item.data = data;
+        showToast('Restaurant saved');
+        if (typeof onDone === 'function') onDone();
+        else renderRestaurantsTab(container);
+      }
+    });
+  }
+
+  // ── Jobs Tab ──
+  async function renderJobsTab(body) {
+    const manifest = await loadManifest();
+    const slugs = manifest.jobs || [];
+    const items = [];
+    for (const slug of slugs) {
+      const j = await readContentFile('content/jobs/' + slug + '.json');
+      if (j) items.push({ slug, data: j.content });
+    }
+
+    function renderList() {
+      body.innerHTML = `
+        <div class="ve-cm-list">
+          ${items.map((item, i) => `<div class="ve-cm-list-item" data-idx="${i}">
+            <div class="ve-cm-item-info">
+              <div class="ve-cm-item-name">${esc(item.data.title_nl || item.slug)}</div>
+              <div class="ve-cm-item-sub">${esc(item.data.cat_nl || '')} &middot; ${esc(item.data.sub_nl || '')}</div>
+            </div>
+            <div class="ve-cm-list-actions">
+              <button data-action="edit" data-idx="${i}">Edit</button>
+              <button data-action="delete" data-idx="${i}" class="danger">Delete</button>
+            </div>
+          </div>`).join('')}
+        </div>
+        <button class="ve-cm-add-btn">+ Add Job</button>`;
+
+      body.querySelectorAll('[data-action="edit"]').forEach(btn => {
+        btn.addEventListener('click', (e) => { e.stopPropagation(); showJobForm(body, items[btn.dataset.idx], renderList); });
+      });
+      body.querySelectorAll('[data-action="delete"]').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btn.dataset.idx);
+          const ok = await veConfirm('Delete "' + items[idx].data.title_nl + '"?');
+          if (!ok) return;
+          await deleteContentFile('content/jobs/' + items[idx].slug + '.json');
+          manifest.jobs = manifest.jobs.filter(s => s !== items[idx].slug);
+          await saveContentFile('content/manifest.json', manifest, 'Remove job: ' + items[idx].slug);
+          items.splice(idx, 1);
+          renderList();
+          showToast('Job deleted');
+        });
+      });
+      body.querySelector('.ve-cm-add-btn').addEventListener('click', () => {
+        showJobForm(body, null, async (newData) => {
+          const slug = slugify(newData.title_nl || newData.title_en || 'job');
+          await saveContentFile('content/jobs/' + slug + '.json', newData, 'Add job: ' + slug);
+          manifest.jobs.push(slug);
+          await saveContentFile('content/manifest.json', manifest, 'Add job to manifest: ' + slug);
+          items.push({ slug, data: newData });
+          renderList();
+        });
+      });
+    }
+    renderList();
+  }
+
+  function showJobForm(container, item, onDone) {
+    const isNew = !item;
+    const data = item ? { ...item.data } : { order: 0, cat_nl: '', cat_en: '', title_nl: '', title_en: '', sub_nl: '', sub_en: '', detail_nl: '', detail_en: '' };
+    const slug = item ? item.slug : '';
+
+    container.innerHTML = `
+      <button class="ve-cm-btn-cancel" style="margin-bottom:12px;">&larr; Back</button>
+      <div class="ve-cm-form">
+        <h4 style="color:#c6a355;font-size:0.8rem;margin-bottom:12px;">${isNew ? 'Add Job' : 'Edit: ' + esc(data.title_nl)}</h4>
+        <div class="ve-cm-field"><label>Order</label><input type="number" data-key="order" value="${data.order || 0}"></div>
+        <div class="ve-cm-row">
+          <div class="ve-cm-field"><label>Category (NL)</label><input data-key="cat_nl" value="${esc(data.cat_nl)}"></div>
+          <div class="ve-cm-field"><label>Category (EN)</label><input data-key="cat_en" value="${esc(data.cat_en)}"></div>
+        </div>
+        <div class="ve-cm-row">
+          <div class="ve-cm-field"><label>Title (NL)</label><input data-key="title_nl" value="${esc(data.title_nl)}"></div>
+          <div class="ve-cm-field"><label>Title (EN)</label><input data-key="title_en" value="${esc(data.title_en)}"></div>
+        </div>
+        <div class="ve-cm-row">
+          <div class="ve-cm-field"><label>Subtitle (NL)</label><input data-key="sub_nl" value="${esc(data.sub_nl)}"></div>
+          <div class="ve-cm-field"><label>Subtitle (EN)</label><input data-key="sub_en" value="${esc(data.sub_en)}"></div>
+        </div>
+        <div class="ve-cm-row">
+          <div class="ve-cm-field"><label>Detail (NL)</label><textarea data-key="detail_nl">${esc(data.detail_nl)}</textarea></div>
+          <div class="ve-cm-field"><label>Detail (EN)</label><textarea data-key="detail_en">${esc(data.detail_en)}</textarea></div>
+        </div>
+        <div class="ve-cm-form-actions">
+          <button class="ve-cm-btn-cancel">Cancel</button>
+          <button class="ve-cm-btn-save">${isNew ? 'Create' : 'Save'}</button>
+        </div>
+      </div>`;
+
+    container.querySelectorAll('[data-key]').forEach(input => {
+      input.addEventListener('input', () => {
+        data[input.dataset.key] = input.type === 'number' ? parseInt(input.value) || 0 : input.value;
+      });
+    });
+
+    container.querySelectorAll('.ve-cm-btn-cancel').forEach(btn => {
+      btn.addEventListener('click', () => renderJobsTab(container));
+    });
+
+    container.querySelector('.ve-cm-btn-save').addEventListener('click', async () => {
+      if (!data.title_nl && !data.title_en) { showToast('Title is required'); return; }
+      const btn = container.querySelector('.ve-cm-btn-save');
+      btn.textContent = 'Saving...'; btn.disabled = true;
+      if (isNew) {
+        if (typeof onDone === 'function') await onDone(data);
+        showToast('Job created');
+      } else {
+        await saveContentFile('content/jobs/' + slug + '.json', data, 'Update job: ' + data.title_nl);
+        item.data = data;
+        showToast('Job saved');
+        if (typeof onDone === 'function') onDone();
+        else renderJobsTab(container);
+      }
+    });
+  }
+
+  // ── Videos Tab ──
+  async function renderVideosTab(body) {
+    const result = await readContentFile('content/videos.json');
+    if (!result) { body.innerHTML = '<div class="ve-cm-loading">Failed to load videos</div>'; return; }
+    const videos = result.content;
+    const items = videos.items || [];
+
+    function renderList() {
+      body.innerHTML = `
+        <div class="ve-cm-list">
+          ${items.map((v, i) => `<div class="ve-cm-list-item" data-idx="${i}">
+            <div style="width:48px;height:48px;background:#333;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#666;font-size:1.2rem;">${v.type === 'vimeo' ? '&#9654;' : '&#128247;'}</div>
+            <div class="ve-cm-item-info">
+              <div class="ve-cm-item-name">${esc(v.label)}</div>
+              <div class="ve-cm-item-sub">${esc(v.type)} &middot; ${esc(v.url).slice(0, 50)}...</div>
+            </div>
+            <div class="ve-cm-list-actions">
+              <button data-action="edit" data-idx="${i}">Edit</button>
+              <button data-action="delete" data-idx="${i}" class="danger">Delete</button>
+              ${i > 0 ? `<button data-action="up" data-idx="${i}">&uarr;</button>` : ''}
+              ${i < items.length - 1 ? `<button data-action="down" data-idx="${i}">&darr;</button>` : ''}
+            </div>
+          </div>`).join('')}
+        </div>
+        <button class="ve-cm-add-btn">+ Add Video</button>`;
+
+      body.querySelectorAll('[data-action="edit"]').forEach(btn => {
+        btn.addEventListener('click', (e) => { e.stopPropagation(); showVideoForm(body, items, parseInt(btn.dataset.idx), renderList); });
+      });
+      body.querySelectorAll('[data-action="delete"]').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btn.dataset.idx);
+          const ok = await veConfirm('Delete "' + items[idx].label + '"?');
+          if (!ok) return;
+          items.splice(idx, 1);
+          videos.items = items;
+          await saveContentFile('content/videos.json', videos, 'Delete video');
+          renderList();
+          showToast('Video deleted');
+        });
+      });
+      body.querySelectorAll('[data-action="up"]').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btn.dataset.idx);
+          [items[idx - 1], items[idx]] = [items[idx], items[idx - 1]];
+          videos.items = items;
+          await saveContentFile('content/videos.json', videos, 'Reorder videos');
+          renderList();
+        });
+      });
+      body.querySelectorAll('[data-action="down"]').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btn.dataset.idx);
+          [items[idx + 1], items[idx]] = [items[idx], items[idx + 1]];
+          videos.items = items;
+          await saveContentFile('content/videos.json', videos, 'Reorder videos');
+          renderList();
+        });
+      });
+      body.querySelector('.ve-cm-add-btn').addEventListener('click', () => {
+        showVideoForm(body, items, -1, renderList);
+      });
+    }
+    renderList();
+  }
+
+  function showVideoForm(container, items, idx, onDone) {
+    const isNew = idx === -1;
+    const data = isNew ? { label: '', type: 'vimeo', url: '' } : { ...items[idx] };
+
+    container.innerHTML = `
+      <button class="ve-cm-btn-cancel" style="margin-bottom:12px;">&larr; Back</button>
+      <div class="ve-cm-form">
+        <h4 style="color:#c6a355;font-size:0.8rem;margin-bottom:12px;">${isNew ? 'Add Video' : 'Edit: ' + esc(data.label)}</h4>
+        <div class="ve-cm-field"><label>Label</label><input data-key="label" value="${esc(data.label)}"></div>
+        <div class="ve-cm-field"><label>Type</label>
+          <select data-key="type"><option value="vimeo" ${data.type === 'vimeo' ? 'selected' : ''}>Vimeo</option><option value="image" ${data.type === 'image' ? 'selected' : ''}>Image</option></select>
+        </div>
+        <div class="ve-cm-field"><label>URL</label><input data-key="url" value="${esc(data.url)}"></div>
+        <div class="ve-cm-form-actions">
+          <button class="ve-cm-btn-cancel">Cancel</button>
+          <button class="ve-cm-btn-save">${isNew ? 'Add' : 'Save'}</button>
+        </div>
+      </div>`;
+
+    container.querySelectorAll('[data-key]').forEach(input => {
+      input.addEventListener('input', () => { data[input.dataset.key] = input.value; });
+    });
+
+    container.querySelectorAll('.ve-cm-btn-cancel').forEach(btn => {
+      btn.addEventListener('click', () => onDone());
+    });
+
+    container.querySelector('.ve-cm-btn-save').addEventListener('click', async () => {
+      if (!data.label || !data.url) { showToast('Label and URL are required'); return; }
+      const btn = container.querySelector('.ve-cm-btn-save');
+      btn.textContent = 'Saving...'; btn.disabled = true;
+      if (isNew) items.push(data);
+      else items[idx] = data;
+      await saveContentFile('content/videos.json', { items }, isNew ? 'Add video: ' + data.label : 'Update video: ' + data.label);
+      showToast(isNew ? 'Video added' : 'Video saved');
+      onDone();
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // PREVIEW MODE
+  // ═══════════════════════════════════════════════════════════════════
+  function showPreview() {
+    const html = getCleanHTML();
+    const ov = document.createElement('div');
+    ov.className = 've-preview-overlay';
+    ov.innerHTML = `
+      <div class="ve-preview-bar">
+        <span>Preview — This is how your page will look after publishing</span>
+        <div style="display:flex;gap:8px;">
+          <button class="ve-cm-btn-cancel ve-preview-close">Close Preview</button>
+          <button class="ve-cm-btn-save ve-preview-publish">Publish Now</button>
+        </div>
+      </div>
+      <iframe class="ve-preview-frame" sandbox="allow-same-origin allow-scripts"></iframe>`;
+    editorRoot.appendChild(ov);
+
+    const iframe = ov.querySelector('.ve-preview-frame');
+    iframe.srcdoc = html;
+
+    ov.querySelector('.ve-preview-close').addEventListener('click', () => ov.remove());
+    ov.querySelector('.ve-preview-publish').addEventListener('click', async () => {
+      ov.remove();
+      await saveChanges();
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
   // SECTION TEMPLATES
   // ═══════════════════════════════════════════════════════════════════
   const TEMPLATES = {
@@ -1260,6 +1960,18 @@
     if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
 
     try {
+      // Fetch current SHA for conflict detection
+      let currentSha = null;
+      try {
+        const readRes = await fetch(CONFIG.readUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session, file: CONFIG.saveFile })
+        });
+        const readData = await readRes.json();
+        if (readData.success) currentSha = readData.sha;
+      } catch (e) { /* proceed without SHA check */ }
+
       const html = getCleanHTML();
       if (CONFIG.onSave) {
         const result = await CONFIG.onSave({ html, changes: pendingChanges, linkChanges, imageChanges });
@@ -1271,7 +1983,23 @@
           body: JSON.stringify({ session, file: CONFIG.saveFile, content: html, message: 'Visual edit: ' + totalChanges() + ' changes' })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Save failed');
+        if (!data.success) {
+          // Check if it's a conflict (409 or SHA mismatch)
+          if (data.error && data.error.includes('conflict')) {
+            const overwrite = await veConfirm('The file was modified by someone else. Overwrite with your changes?');
+            if (!overwrite) throw new Error('Save cancelled — file conflict');
+            // Retry without SHA check
+            const retry = await fetch(CONFIG.saveUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ session, file: CONFIG.saveFile, content: html, message: 'Visual edit (force): ' + totalChanges() + ' changes' })
+            });
+            const retryData = await retry.json();
+            if (!retryData.success) throw new Error(retryData.error || 'Save failed');
+          } else {
+            throw new Error(data.error || 'Save failed');
+          }
+        }
       }
       showToast('Published! Changes are live in ~30 seconds.');
       document.querySelectorAll('[data-ve-id].ve-editable').forEach(el => {
@@ -1457,9 +2185,11 @@
       <button class="ve-device-btn" data-device="tablet" title="Tablet">📱</button>
       <button class="ve-device-btn" data-device="mobile" title="Mobile">📲</button>
       <div class="ve-topbar-sep"></div>
+      <button class="ve-tb-content" title="Content Manager">Content</button>
       <button class="ve-tb-styles" title="Global Styles">🎨</button>
       <button class="ve-tb-seo" title="SEO Settings">SEO</button>
       <div class="ve-topbar-sep"></div>
+      <button class="ve-tb-preview" title="Preview changes">Preview</button>
       <button class="ve-tb-save" disabled>Save & Publish</button>
       <button class="ve-tb-toggle-right" title="Toggle properties">⚙</button>
       <button class="ve-tb-logout" title="Logout">↗</button>
@@ -1482,6 +2212,8 @@
     topbar.querySelector('.ve-tb-save').addEventListener('click', saveChanges);
     topbar.querySelector('.ve-tb-seo').addEventListener('click', showSEOPanel);
     topbar.querySelector('.ve-tb-styles').addEventListener('click', showGlobalStyles);
+    topbar.querySelector('.ve-tb-content').addEventListener('click', showContentManager);
+    topbar.querySelector('.ve-tb-preview').addEventListener('click', showPreview);
     topbar.querySelector('.ve-tb-logout').addEventListener('click', () => {
       sessionStorage.removeItem(CONFIG.sessionKey);
       window.location.href = window.location.pathname;
@@ -1611,6 +2343,9 @@
     save: saveChanges,
     getCleanHTML,
     showSEO: showSEOPanel,
+    showContent: showContentManager,
+    showPreview,
+    uploadImage,
   };
 
 })();

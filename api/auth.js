@@ -1,6 +1,5 @@
+// Deprecated: GitHub OAuth flow removed in favor of password + HMAC token auth.
+// This endpoint is no longer used. See api/login.js instead.
 module.exports = function handler(req, res) {
-    const clientId = process.env.GITHUB_CLIENT_ID;
-    const redirectUri = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}/api/callback`;
-    const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=repo,user`;
-    res.redirect(authUrl);
+    res.status(410).json({ error: 'This authentication method has been removed. Use /api/login instead.' });
 };

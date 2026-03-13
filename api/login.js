@@ -1,4 +1,4 @@
-const { methodGuard, originGuard, parseBody } = require('./_shared');
+const { methodGuard, originGuard, parseBody, generateToken } = require('./_shared');
 
 const loginAttempts = new Map(); // ip -> { count, resetAt }
 
@@ -39,7 +39,8 @@ module.exports = async function handler(req, res) {
 
         if (password === validPassword) {
             loginAttempts.delete(ip);
-            return res.status(200).json({ success: true, session: sessionSecret });
+            const token = generateToken(sessionSecret);
+            return res.status(200).json({ success: true, session: token });
         }
 
         return res.status(401).json({ error: 'Invalid password' });
