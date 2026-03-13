@@ -2,6 +2,12 @@
 const restaurants = (window.balanceData && window.balanceData.restaurants) || [];
 const jobs = (window.balanceData && window.balanceData.jobs) || [];
 
+function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+
 // ============ i18n ============
 let currentLang = localStorage.getItem('bh-lang') || 'nl';
 
@@ -113,20 +119,22 @@ function renderRestaurants() {
     const grid = document.getElementById('restaurantsGrid');
     const badge = translations[currentLang].badge_coming;
     grid.innerHTML = restaurants.map((r, i) => `
-        <a href="${r.url}" target="_blank" rel="noopener" class="restaurant-card">
-            ${r.status === 'coming-soon' ? `<div class="badge">${badge}</div>` : ''}
+        <a href="${esc(r.url)}" target="_blank" rel="noopener" class="restaurant-card">
+            ${r.status === 'coming-soon' ? `<div class="badge">${esc(badge)}</div>` : ''}
             <div class="restaurant-card-media">
-                ${r.img ? `<img src="${r.img}" alt="${r.name}" loading="lazy">` : `<span class="restaurant-card-media-placeholder">${translations[currentLang].coming_soon_placeholder}</span>`}
+                ${r.img ? `<img src="${esc(r.img)}" alt="${esc(r.name)}" loading="lazy">` : `<span class="restaurant-card-media-placeholder">${esc(translations[currentLang].coming_soon_placeholder)}</span>`}
                 <div class="restaurant-card-media-overlay"></div>
-                ${r.cuisine ? `<span class="restaurant-card-cuisine">${r.cuisine}</span>` : ''}
+                ${r.cuisine ? `<span class="restaurant-card-cuisine">${esc(r.cuisine)}</span>` : ''}
             </div>
             <div class="restaurant-card-body">
-                <h3 class="restaurant-card-name">${r.name}</h3>
-                <p class="restaurant-card-desc">${r.desc[currentLang]}</p>
-                <span class="restaurant-card-link">${translations[currentLang].visit_link} &nearr;</span>
+                <h3 class="restaurant-card-name">${esc(r.name)}</h3>
+                <p class="restaurant-card-desc">${esc(r.desc[currentLang])}</p>
+                <span class="restaurant-card-link">${esc(translations[currentLang].visit_link)} &nearr;</span>
             </div>
         </a>
     `).join('');
+    // Duplicate cards for seamless infinite loop
+    grid.innerHTML += grid.innerHTML;
     observeReveals();
 }
 
@@ -135,10 +143,10 @@ function renderJobs() {
     grid.innerHTML = jobs.map((j, i) => `
         <a href="https://marketingdm.typeform.com/BHG-jobs" target="_blank" rel="noopener" class="job-card reveal reveal-delay-${Math.min(i + 1, 6)}" style="text-decoration:none;color:inherit;display:block;">
             <span class="job-card-index">0${i + 1}</span>
-            <span class="job-card-cat">${j.cat[currentLang]}</span>
-            <h3 class="job-card-title">${j.title[currentLang]}</h3>
-            <p class="job-card-sub">${j.sub[currentLang]}</p>
-            ${j.detail ? `<p class="job-card-detail">${j.detail[currentLang]}</p>` : ''}
+            <span class="job-card-cat">${esc(j.cat[currentLang])}</span>
+            <h3 class="job-card-title">${esc(j.title[currentLang])}</h3>
+            <p class="job-card-sub">${esc(j.sub[currentLang])}</p>
+            ${j.detail ? `<p class="job-card-detail">${esc(j.detail[currentLang])}</p>` : ''}
             <span class="job-card-arrow">${currentLang === 'nl' ? 'Solliciteer' : 'Apply'} &rarr;</span>
         </a>
     `).join('');
@@ -148,7 +156,7 @@ function renderJobs() {
 function renderFooter() {
     const t = translations[currentLang];
     document.getElementById('footerRestaurants').innerHTML = restaurants.map(r =>
-        `<li><a href="${r.url}" target="_blank" rel="noopener">${r.name}</a></li>`
+        `<li><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a></li>`
     ).join('');
     document.getElementById('footerMore').innerHTML = `<li><a href="#about" data-i18n="footer_about">${t.footer_about}</a></li><li><a href="#videos" data-i18n="footer_videos">${t.footer_videos}</a></li><li><a href="#jobs" data-i18n="footer_jobs_link">${t.footer_jobs_link}</a></li>`;
 }
@@ -159,7 +167,7 @@ function buildMarquee() {
     const track = document.getElementById('marqueeTrack');
     let html = '';
     for (let i = 0; i < 4; i++) {
-        names.forEach(n => { html += `<div class="marquee-item">${n}<div class="marquee-dot"></div></div>`; });
+        names.forEach(n => { html += `<div class="marquee-item">${esc(n)}<div class="marquee-dot"></div></div>`; });
     }
     track.innerHTML = html;
 }
@@ -168,7 +176,7 @@ window.addEventListener('scroll', () => {
     document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
 
     // Nav active state
-    const sections = ['jobs', 'about', 'restaurants', 'videos'];
+    const sections = ['about', 'restaurants', 'videos', 'jobs'];
     const scrollPos = window.scrollY + 160;
     let current = '';
     sections.forEach(id => {
@@ -182,7 +190,7 @@ window.addEventListener('scroll', () => {
 
 // ============ DRAG SCROLL ============
 function initDragScroll() {
-    ['videoReelScroll', 'restaurantsGrid'].forEach(id => {
+    ['videoReelScroll', 'restaurantsGrid', 'jobsGrid'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
         let isDown = false, startX, scrollLeft;
@@ -260,6 +268,47 @@ function observeStats() {
     nums.forEach(el => observer.observe(el));
 }
 
+// ============ AUTO SCROLL ============
+function initAutoScroll(elementId, speed) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    let paused = false;
+    let rafId;
+
+    function step() {
+        if (!paused) {
+            el.scrollLeft += speed;
+            // Seamless loop: when we reach the duplicate halfway point, reset
+            if (el.scrollLeft >= el.scrollWidth / 2) {
+                el.scrollLeft = 0;
+            }
+        }
+        rafId = requestAnimationFrame(step);
+    }
+
+    el.addEventListener('mouseenter', () => { paused = true; });
+    el.addEventListener('mouseleave', () => { paused = false; });
+    el.addEventListener('touchstart', () => { paused = true; }, { passive: true });
+    el.addEventListener('touchend', () => { setTimeout(() => { paused = false; }, 2000); });
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                rafId = requestAnimationFrame(step);
+            } else {
+                cancelAnimationFrame(rafId);
+            }
+        });
+    }, { threshold: 0.1 });
+    observer.observe(el);
+}
+
+function duplicateForLoop(elementId) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    el.innerHTML += el.innerHTML;
+}
+
 // ============ INIT ============
 document.addEventListener('DOMContentLoaded', () => {
     buildMarquee();
@@ -268,4 +317,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initDragScroll();
     observeFooter();
     observeStats();
+    // Auto-scroll carousels
+    duplicateForLoop('videoReelScroll');
+    initAutoScroll('restaurantsGrid', 0.5);
+    initAutoScroll('videoReelScroll', 0.4);
 });

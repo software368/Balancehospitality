@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '2301782850308450');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=2301782850308450&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Balance Hospitality Group | Scheveningen</title>
@@ -1113,17 +1131,6 @@
 
     </style>
 
-    <!-- Google Analytics (GA4) — TODO: replace G-XXXXXXXXXX with your actual GA4 measurement ID -->
-    <!--
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-XXXXXXXXXX');
-    </script>
-    -->
-
     <!-- Schema.org Structured Data -->
     <script type="application/ld+json">
     {
@@ -1358,41 +1365,6 @@
         <div class="marquee-track" id="marqueeTrack"></div>
     </div>
 
-    <!-- JOBS -->
-    <section class="jobs section" id="jobs">
-        <div class="container">
-            <div class="section-header">
-                <p class="section-label reveal" data-i18n="jobs_label">Vacatures</p>
-                <h2 class="jobs-title-animated reveal" data-i18n="jobs_title">Word Deel Van <em>Ons Team</em></h2>
-                <div class="ornament reveal reveal-delay-2">
-                    <div class="ornament-line"></div>
-                </div>
-            </div>
-            <div class="jobs-intro reveal">
-                <p data-i18n="jobs_intro">Kom werken bij de leukste horecagroep van Scheveningen!</p>
-            </div>
-
-            <div class="jobs-positions" id="jobsGrid"></div>
-
-            <div class="benefits-section reveal">
-                <h3 class="benefits-title" data-i18n="benefits_title">Waarom werken bij <em>Balance</em>?</h3>
-                <ul class="benefits-list" id="benefitsList">
-                    <li><strong data-i18n="benefit_1_title">Balance Academy</strong> &mdash; <span data-i18n="benefit_1_desc">geen ervaring nodig, wij trainen je</span></li>
-                    <li><strong data-i18n="benefit_2_title">Flexibele uren</strong> &mdash; <span data-i18n="benefit_2_desc">fulltime, parttime, seizoen of oproep</span></li>
-                    <li><strong data-i18n="benefit_3_title">Personeelskorting</strong> &mdash; <span data-i18n="benefit_3_desc">korting op maaltijden & pensioenregeling</span></li>
-                    <li><strong data-i18n="benefit_4_title">Doorgroeien</strong> &mdash; <span data-i18n="benefit_4_desc">van medewerker naar Head Waiter, Manager of verder</span></li>
-                    <li><strong data-i18n="benefit_5_title">Extra's</strong> &mdash; <span data-i18n="benefit_5_desc">kerstpakket, reiskosten- & taxivergoeding</span></li>
-                    <li><strong data-i18n="benefit_6_title">Teamevents</strong> &mdash; <span data-i18n="benefit_6_desc">borrels, feesten & toffe collega's aan zee</span></li>
-                </ul>
-            </div>
-
-            <div class="jobs-cta reveal">
-                <a href="https://marketingdm.typeform.com/BHG-jobs" target="_blank" rel="noopener" class="btn-apply" id="applyBtn" data-i18n="jobs_apply">Solliciteer in 1 minuut</a>
-                <span class="btn-apply-sub" data-i18n="jobs_apply_sub">Alle locaties &middot; Scheveningen</span>
-            </div>
-        </div>
-    </section>
-
     <!-- ABOUT -->
     <section class="about section" id="about">
         <div class="container">
@@ -1485,6 +1457,41 @@
                 </div>
             </div>
             <p class="video-reel-hint reveal" data-i18n="video_hint">&#8592; Drag to explore &#8594;</p>
+        </div>
+    </section>
+
+    <!-- JOBS -->
+    <section class="jobs section" id="jobs">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-label reveal" data-i18n="jobs_label">Vacatures</p>
+                <h2 class="jobs-title-animated reveal" data-i18n="jobs_title">Word Deel Van <em>Ons Team</em></h2>
+                <div class="ornament reveal reveal-delay-2">
+                    <div class="ornament-line"></div>
+                </div>
+            </div>
+            <div class="jobs-intro reveal">
+                <p>Come work at the coolest hospitality group in Scheveningen!</p>
+            </div>
+
+            <div class="jobs-positions" id="jobsGrid"></div>
+
+            <div class="benefits-section reveal">
+                <h3 class="benefits-title" data-i18n="benefits_title">Waarom werken bij <em>Balance</em>?</h3>
+                <ul class="benefits-list" id="benefitsList">
+                    <li><strong data-i18n="benefit_1_title">Balance Academy</strong> &mdash; <span data-i18n="benefit_1_desc">geen ervaring nodig, wij trainen je</span></li>
+                    <li><strong data-i18n="benefit_2_title">Flexibele uren</strong> &mdash; <span data-i18n="benefit_2_desc">fulltime, parttime, seizoen of oproep</span></li>
+                    <li><strong data-i18n="benefit_3_title">Personeelskorting</strong> &mdash; <span data-i18n="benefit_3_desc">korting op maaltijden & pensioenregeling</span></li>
+                    <li><strong data-i18n="benefit_4_title">Doorgroeien</strong> &mdash; <span data-i18n="benefit_4_desc">van medewerker naar Head Waiter, Manager of verder</span></li>
+                    <li><strong data-i18n="benefit_5_title">Extra's</strong> &mdash; <span data-i18n="benefit_5_desc">kerstpakket, reiskosten- & taxivergoeding</span></li>
+                    <li><strong data-i18n="benefit_6_title">Teamevents</strong> &mdash; <span data-i18n="benefit_6_desc">borrels, feesten & toffe collega's aan zee</span></li>
+                </ul>
+            </div>
+
+            <div class="jobs-cta reveal">
+                <a href="https://marketingdm.typeform.com/BHG-jobs" target="_blank" rel="noopener" class="btn-apply" id="applyBtn" data-i18n="jobs_apply">Solliciteer in 1 minuut</a>
+                <span class="btn-apply-sub" data-i18n="jobs_apply_sub">Alle locaties &middot; Scheveningen</span>
+            </div>
         </div>
     </section>
 
@@ -1620,6 +1627,12 @@ const translations = {
     }
 };
 
+function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+
 function toggleLang() {
     currentLang = currentLang === 'nl' ? 'en' : 'nl';
     localStorage.setItem('bh-lang', currentLang);
@@ -1649,17 +1662,17 @@ function renderRestaurants() {
     const grid = document.getElementById('restaurantsGrid');
     const badge = translations[currentLang].badge_coming;
     grid.innerHTML = restaurants.map((r, i) => `
-        <a href="${r.url}" target="_blank" rel="noopener" class="restaurant-card">
-            ${r.status === 'coming-soon' ? `<div class="badge">${badge}</div>` : ''}
+        <a href="${esc(r.url)}" target="_blank" rel="noopener" class="restaurant-card">
+            ${r.status === 'coming-soon' ? `<div class="badge">${esc(badge)}</div>` : ''}
             <div class="restaurant-card-media">
-                ${r.img ? `<img src="${r.img}" alt="${r.name}" loading="lazy">` : `<span class="restaurant-card-media-placeholder">${translations[currentLang].coming_soon_placeholder}</span>`}
+                ${r.img ? `<img src="${esc(r.img)}" alt="${esc(r.name)}" loading="lazy">` : `<span class="restaurant-card-media-placeholder">${esc(translations[currentLang].coming_soon_placeholder)}</span>`}
                 <div class="restaurant-card-media-overlay"></div>
-                ${r.cuisine ? `<span class="restaurant-card-cuisine">${r.cuisine}</span>` : ''}
+                ${r.cuisine ? `<span class="restaurant-card-cuisine">${esc(r.cuisine)}</span>` : ''}
             </div>
             <div class="restaurant-card-body">
-                <h3 class="restaurant-card-name">${r.name}</h3>
-                <p class="restaurant-card-desc">${r.desc[currentLang]}</p>
-                <span class="restaurant-card-link">${translations[currentLang].visit_link} &nearr;</span>
+                <h3 class="restaurant-card-name">${esc(r.name)}</h3>
+                <p class="restaurant-card-desc">${esc(r.desc[currentLang])}</p>
+                <span class="restaurant-card-link">${esc(translations[currentLang].visit_link)} &nearr;</span>
             </div>
         </a>
     `).join('');
@@ -1671,10 +1684,10 @@ function renderJobs() {
     grid.innerHTML = jobs.map((j, i) => `
         <a href="https://marketingdm.typeform.com/BHG-jobs" target="_blank" rel="noopener" class="job-card reveal reveal-delay-${Math.min(i + 1, 6)}" style="text-decoration:none;color:inherit;display:block;">
             <span class="job-card-index">0${i + 1}</span>
-            <span class="job-card-cat">${j.cat[currentLang]}</span>
-            <h3 class="job-card-title">${j.title[currentLang]}</h3>
-            <p class="job-card-sub">${j.sub[currentLang]}</p>
-            ${j.detail ? `<p class="job-card-detail">${j.detail[currentLang]}</p>` : ''}
+            <span class="job-card-cat">${esc(j.cat[currentLang])}</span>
+            <h3 class="job-card-title">${esc(j.title[currentLang])}</h3>
+            <p class="job-card-sub">${esc(j.sub[currentLang])}</p>
+            ${j.detail ? `<p class="job-card-detail">${esc(j.detail[currentLang])}</p>` : ''}
             <span class="job-card-arrow">${currentLang === 'nl' ? 'Solliciteer' : 'Apply'} &rarr;</span>
         </a>
     `).join('');
@@ -1684,7 +1697,7 @@ function renderJobs() {
 function renderFooter() {
     const t = translations[currentLang];
     document.getElementById('footerRestaurants').innerHTML = restaurants.map(r =>
-        `<li><a href="${r.url}" target="_blank" rel="noopener">${r.name}</a></li>`
+        `<li><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a></li>`
     ).join('');
     document.getElementById('footerMore').innerHTML = `<li><a href="#about" data-i18n="footer_about">${t.footer_about}</a></li><li><a href="#videos" data-i18n="footer_videos">${t.footer_videos}</a></li><li><a href="#jobs" data-i18n="footer_jobs_link">${t.footer_jobs_link}</a></li>`;
 }
@@ -1695,7 +1708,7 @@ function buildMarquee() {
     const track = document.getElementById('marqueeTrack');
     let html = '';
     for (let i = 0; i < 4; i++) {
-        names.forEach(n => { html += `<div class="marquee-item">${n}<div class="marquee-dot"></div></div>`; });
+        names.forEach(n => { html += `<div class="marquee-item">${esc(n)}<div class="marquee-dot"></div></div>`; });
     }
     track.innerHTML = html;
 }
@@ -1803,8 +1816,12 @@ async function loadContent() {
         const settingsRes = await fetch('/content/settings.json');
         siteSettings = await settingsRes.json();
 
-        // Load restaurants (fetch each JSON file via GitHub API listing or known filenames)
-        const restaurantFiles = ['miss-maui', 'oceans-beach-house', 'oyster-pearl', 'volare', 'big-bell', 'lady-lobster', 'brooklyn', 'columbus'];
+        // Load manifest for dynamic file discovery
+        const manifestRes = await fetch('/content/manifest.json');
+        const manifest = await manifestRes.json();
+
+        // Load restaurants from manifest
+        const restaurantFiles = manifest.restaurants || [];
         const restaurantPromises = restaurantFiles.map(f => fetch(`/content/restaurants/${f}.json`).then(r => r.json()).catch(() => null));
         const rawRestaurants = (await Promise.all(restaurantPromises)).filter(Boolean);
         restaurants = rawRestaurants.sort((a, b) => (a.order || 0) - (b.order || 0)).map(r => ({
@@ -1816,8 +1833,8 @@ async function loadContent() {
             desc: { nl: r.desc_nl, en: r.desc_en }
         }));
 
-        // Load jobs
-        const jobFiles = ['keuken-kok', 'chef-kok', 'bar', 'host', 'bediening', 'assistent-manager'];
+        // Load jobs from manifest
+        const jobFiles = manifest.jobs || [];
         const jobPromises = jobFiles.map(f => fetch(`/content/jobs/${f}.json`).then(r => r.json()).catch(() => null));
         const rawJobs = (await Promise.all(jobPromises)).filter(Boolean);
         jobs = rawJobs.sort((a, b) => (a.order || 0) - (b.order || 0)).map(j => ({
@@ -1847,11 +1864,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 <!-- Visual Editor -->
 <script src="visual-editor.js"
-  data-ve-password="HMAwebedit01!*"
+  data-ve-login-url="/api/login"
   data-ve-save-url="/api/save"
+  data-ve-read-url="/api/read"
+  data-ve-upload-url="/api/upload"
+  data-ve-delete-url="/api/delete"
   data-ve-save-file="index.html"
   data-ve-session-key="bh-edit-session"
-  data-ve-session-secret="bhg-session-2026-x9k4m"
   data-ve-activate="?edit"
 ></script>
 </body>
